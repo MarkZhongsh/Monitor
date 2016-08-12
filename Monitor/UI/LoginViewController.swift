@@ -14,7 +14,7 @@ protocol LoginDelegate {
     func login(account: String, password: String)
 }
 
-class LoginViewController : UIViewController {
+class LoginViewController : UIViewController, UITextFieldDelegate {
     
     var pwdField: UITextField!
     var accountFiled: UITextField!
@@ -108,6 +108,8 @@ class LoginViewController : UIViewController {
         let dict:Dictionary<String, AnyObject>! = uiContentDictionary()
         accountFiled.placeholder = dict["AccountHint"] as? String
         accountFiled.borderStyle = .RoundedRect
+        accountFiled.returnKeyType = .Next
+        accountFiled.delegate = self
         
         view.addSubview(accountFiled)
         accountFiled.snp_makeConstraints(closure: { (make) -> Void in
@@ -125,6 +127,8 @@ class LoginViewController : UIViewController {
         pwdField.placeholder = dict["PwdHint"] as? String
         pwdField.borderStyle = .RoundedRect
         pwdField.secureTextEntry = true
+        pwdField.delegate = self
+        pwdField.returnKeyType = .Done
         
         view.addSubview(pwdField)
         pwdField.snp_makeConstraints(closure: { (make) -> Void in
@@ -242,9 +246,7 @@ class LoginViewController : UIViewController {
     func loginAction() {
         self.resignAllFirstResponder()
         
-        if self.delegate != nil {
-            self.delegate?.login("", password: "")
-        }
+        self.delegate?.login("", password: "")
         
     }
     
@@ -252,6 +254,20 @@ class LoginViewController : UIViewController {
         self.resignAllFirstResponder()
     }
     
+    //MARK: - UITextFieldDelegate 
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        
+        if textField.returnKeyType == .Next {
+            textField.resignFirstResponder()
+            self.pwdField.becomeFirstResponder()
+            textField.nextResponder()
+        }
+        else if textField.returnKeyType == .Done {
+            textField.resignFirstResponder()
+        }
+        
+        return true
+    }
 }
 
 
