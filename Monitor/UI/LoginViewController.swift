@@ -10,6 +10,7 @@ import SnapKit
 import Foundation
 import UIKit
 
+
 protocol LoginDelegate {
     func login(account: String, password: String)
 }
@@ -87,7 +88,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         let view = UIView()
         
         let title = UILabel()
-        if let dict = uiContentDictionary() {
+        if let dict = MonitorUtil.UiContentDictionary() {
             title.text = dict["Title"] as? String
             title.font = title.font.fontWithSize(30)
         }
@@ -105,7 +106,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
     func accountView() -> UIView {
         let view = UIView()
         accountFiled = UITextField()
-        let dict:Dictionary<String, AnyObject>! = uiContentDictionary()
+        let dict:Dictionary<String, AnyObject>! = MonitorUtil.UiContentDictionary()
         accountFiled.placeholder = dict["AccountHint"] as? String
         accountFiled.borderStyle = .RoundedRect
         accountFiled.returnKeyType = .Next
@@ -123,7 +124,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         let view = UIView()
         
         pwdField = UITextField()
-        let dict:Dictionary<String, AnyObject>! = uiContentDictionary()
+        let dict:Dictionary<String, AnyObject>! = MonitorUtil.UiContentDictionary()
         pwdField.placeholder = dict["PwdHint"] as? String
         pwdField.borderStyle = .RoundedRect
         pwdField.secureTextEntry = true
@@ -143,7 +144,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         
         let switchBtn = UISwitch()
         switchBtn.on = true
-        if let resourcePath = getResourceBundlePath() {
+        if let resourcePath = MonitorUtil.GetResourceBundlePath() {
             switchBtn.onImage = UIImage(contentsOfFile: resourcePath+"/check.png")
             switchBtn.offImage = UIImage(contentsOfFile: resourcePath+"/uncheck.png")
         }
@@ -155,7 +156,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         })
         
         let savePwdLbl = UILabel()
-        if let dict = uiContentDictionary() {
+        if let dict = MonitorUtil.UiContentDictionary() {
             savePwdLbl.text = dict["SavePwd"] as? String
         }
         
@@ -167,7 +168,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         })
         
         let forgetPwdLbl = UILabel()
-        if let dict = uiContentDictionary() {
+        if let dict = MonitorUtil.UiContentDictionary() {
             forgetPwdLbl.text = dict["ForgetPwd"] as? String
         }
         
@@ -182,11 +183,11 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
     
     func confirmAndRegisterView() -> UIView {
         let view = UIView()
-        let resourcePath = getResourceBundlePath()
+        let resourcePath = MonitorUtil.GetResourceBundlePath()
         
         let loginBtn = UIButton()
         loginBtn.addTarget(self, action: #selector(loginAction), forControlEvents: .TouchUpInside)
-        if let uiInfo = uiContentDictionary() {
+        if let uiInfo = MonitorUtil.UiContentDictionary() {
             loginBtn.setTitle(uiInfo["Login"] as? String, forState: .Normal)
             
             let bg = UIImage(contentsOfFile: resourcePath!+"/btn_bg.png")?.resizableImageWithCapInsets(UIEdgeInsets(top: 4, left: 14, bottom: 28, right: 17), resizingMode: .Stretch)
@@ -204,7 +205,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         
         let regBtn = UIButton()
         regBtn.addTarget(self, action: #selector(registrationAction), forControlEvents: .TouchUpInside)
-        if let uiInfo = uiContentDictionary() {
+        if let uiInfo = MonitorUtil.UiContentDictionary() {
             regBtn.setTitle(uiInfo["Register"] as? String, forState: .Normal)
             let bg = UIImage(contentsOfFile: resourcePath!+"/btn_bg.png")?.resizableImageWithCapInsets(UIEdgeInsets(top: 4, left: 14, bottom: 28, right: 17), resizingMode: .Tile)
             regBtn.setBackgroundImage(bg, forState: .Normal)
@@ -222,16 +223,6 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
     }
     
     //MARK: - LoginViewController Utils
-    func uiContentDictionary() -> Dictionary<String, AnyObject>? {
-        let uiContentPath:String! = NSBundle.mainBundle().pathForResource("UIContent", ofType: "plist")
-        let dictionary = NSDictionary(contentsOfFile: uiContentPath)
-        return (dictionary as? Dictionary<String, AnyObject>)
-    }
-    
-    func getResourceBundlePath() -> String? {
-        return NSBundle.mainBundle().pathForResource("resource", ofType: "bundle")
-    }
-    
     func resignAllFirstResponder() {
         self.accountFiled.resignFirstResponder()
         self.pwdField.resignFirstResponder()
@@ -247,6 +238,9 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         self.resignAllFirstResponder()
         
         self.delegate?.login("", password: "")
+        
+        let videoViewCtrl = VideoViewController()
+        presentViewController(videoViewCtrl, animated: true, completion: nil)
         
     }
     
