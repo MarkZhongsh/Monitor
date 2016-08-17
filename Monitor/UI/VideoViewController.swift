@@ -10,14 +10,18 @@
 import SnapKit
 import Foundation
 import UIKit
+import AVFoundation
 
 
 class VideoViewController: UIViewController  {
-    var topView: UIView!
-    var bottomView: UIView!
+    var videoTitle: String? = "大爷般的Swift"
     
-    var isPlaying: Bool = false
-    var isAnimating: Bool = false
+    private var topView: UIView!
+    private var bottomView: UIView!
+    private var displayLayer: AVSampleBufferDisplayLayer!
+    
+    private var isPlaying: Bool = false
+    private var isAnimating: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,7 +56,7 @@ class VideoViewController: UIViewController  {
         
     }
     
-    func createTopView() -> UIView {
+    private func createTopView() -> UIView {
         let view = UIView()
         
         let backBtn = UIButton()
@@ -67,8 +71,9 @@ class VideoViewController: UIViewController  {
         })
         
         let title = UILabel()
-        title.text = "如果说这个标题变得很长很长会咋样呢我非常好奇啊"
+        title.text = videoTitle
         title.textColor = UIColor.blackColor()
+        title.textAlignment = .Center
         title.numberOfLines = 1
         title.lineBreakMode = .ByTruncatingTail
         view.addSubview(title)
@@ -81,7 +86,7 @@ class VideoViewController: UIViewController  {
         return view
     }
     
-    func createBottomView() -> UIView {
+    private func createBottomView() -> UIView {
         let view = UIView()
         
         let playBtn = UIButton()
@@ -100,21 +105,25 @@ class VideoViewController: UIViewController  {
         return view
     }
     
-    func createVideoView() -> UIView {
+    private func createVideoView() -> UIView {
         let view = UIView()
         
         let tapVideoGes = UITapGestureRecognizer(target: self, action: #selector(tapVideoView))
         view.addGestureRecognizer(tapVideoGes)
         
+        displayLayer = AVSampleBufferDisplayLayer()
+        displayLayer.frame = view.frame
+        view.layer.addSublayer(displayLayer)
+        
         return view;
     }
     
     //MARK: - VideoViewController Actions
-    func backButtonClicked() {
+    @objc private func backButtonClicked() {
         dismissViewControllerAnimated(true, completion: nil)
     }
     
-    func playButtonClicked(playBtn btn: AnyObject) {
+    @objc private func playButtonClicked(playBtn btn: AnyObject) {
         let playBtn = btn as! UIButton
         isPlaying = !isPlaying
         var playBtnImg: UIImage!
@@ -129,7 +138,7 @@ class VideoViewController: UIViewController  {
         playBtn.setBackgroundImage(playBtnImg, forState: .Normal)
     }
     
-    func tapVideoView() {
+    @objc private func tapVideoView() {
         
         //若动画正在进行, 则直接返回
         if isAnimating == true {
@@ -171,7 +180,45 @@ class VideoViewController: UIViewController  {
         isAnimating = false
     }
     
+    //MARK: - Video Operation
+    func setVideoBuffer(buffer: CMSampleBuffer) {
+        
+        displayLayer.enqueueSampleBuffer(buffer)
+        
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
