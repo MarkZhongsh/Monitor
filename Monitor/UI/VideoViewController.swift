@@ -13,16 +13,18 @@ import UIKit
 import AVFoundation
 
 
-class VideoViewController: UIViewController  {
-    var videoTitle: String? = "大爷般的Swift"
+class VideoViewController: UIViewController, VideoH264DecoderDelegate {
+    var videoTitle: String? = "大爷般的Swift工工工工工工"
     
     private var topView: UIView!
     private var bottomView: UIView!
-    private var displayLayer: AVSampleBufferDisplayLayer!
+    private var displayLayer: AAPLEAGLLayer!
+    private var diaplayImgView: UIImageView!
     
     private var isPlaying: Bool = false
     private var isAnimating: Bool = false
     
+    private var videoDecoder: VideoH264Decoder!
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -47,13 +49,23 @@ class VideoViewController: UIViewController  {
         })
         
         let videoView = createVideoView()
-        videoView.backgroundColor = UIColor.brownColor()
+//        videoView.backgroundColor = UIColor.brownColor()
         view.insertSubview(videoView, atIndex: 0)
         videoView.snp_makeConstraints(closure: { (make) -> Void in
             make.leading.trailing.equalTo(videoView.superview!)
             make.top.bottom.equalTo(videoView.superview!)
         })
         
+    }
+    
+    override func viewDidLayoutSubviews() {
+        if displayLayer != nil && CGRectIsEmpty(displayLayer.frame) == true {
+            let layer = self.view.layer
+            let bounds = CGRectMake(layer.bounds.origin.x, layer.bounds.origin.y, layer.bounds.width, layer.bounds.height)
+            displayLayer.bounds = bounds
+            displayLayer.position = CGPointMake(CGRectGetMidX(layer.bounds), CGRectGetMidY(layer.bounds))
+            
+        }
     }
     
     private func createTopView() -> UIView {
@@ -111,9 +123,13 @@ class VideoViewController: UIViewController  {
         let tapVideoGes = UITapGestureRecognizer(target: self, action: #selector(tapVideoView))
         view.addGestureRecognizer(tapVideoGes)
         
-        displayLayer = AVSampleBufferDisplayLayer()
-        displayLayer.frame = view.frame
+        displayLayer = AAPLEAGLLayer(frame: UIScreen.mainScreen().bounds)
         view.layer.addSublayer(displayLayer)
+        
+        videoDecoder = VideoH264Decoder()
+        let videoPath = NSBundle.mainBundle().pathForResource("mtv", ofType: "h264")
+        videoDecoder.open(videoPath)
+        videoDecoder.videoDelegate = self
         
         return view;
     }
@@ -135,7 +151,10 @@ class VideoViewController: UIViewController  {
             playBtnImg = UIImage(contentsOfFile: resourcePath!+"/playVideo.png")
         }
         
+        videoDecoder.startDecode();
         playBtn.setBackgroundImage(playBtnImg, forState: .Normal)
+        
+        
     }
     
     @objc private func tapVideoView() {
@@ -180,10 +199,25 @@ class VideoViewController: UIViewController  {
         isAnimating = false
     }
     
+    //MARK: - VideoH264Decoder Deleagte
+    func videoDecodeCallback(pixelBuff: CVPixelBufferRef?) {
+        if pixelBuff != nil {
+            self.setVideoBuffer(pixelBuff!)
+        }
+    }
+    
     //MARK: - Video Operation
-    func setVideoBuffer(buffer: CMSampleBuffer) {
-        
-        displayLayer.enqueueSampleBuffer(buffer)
+    func setVideoBuffer(buffer: CVPixelBufferRef) {
+        let ciImg = CIImage(CVPixelBuffer: buffer)
+        let uiimg = UIImage(CIImage: ciImg)
+        self.displayLayer.pixelBuffer = buffer
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+//            self.displayLayer.enqueueSampleBuffer(buffer)
+//            self.displayLayer.pixelBuffer = buffer
+//            self.diaplayImgView.image = uiimg
+            
+        })
+        //self.displayLayer.enqueueSampleBuffer(buffer)
         
     }
 }
