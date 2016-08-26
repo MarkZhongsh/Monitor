@@ -16,7 +16,7 @@
 
 -(id) init;
 
-- (int) getStream:(void*) dest size:(int) size;
+- (NSUInteger) getStream:(void*) dest size:(NSUInteger) size;
 
 - (BOOL) open:(NSString*) path;
 

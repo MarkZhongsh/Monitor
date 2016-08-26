@@ -208,16 +208,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     
     //MARK: - Video Operation
     func setVideoBuffer(buffer: CVPixelBufferRef) {
-        let ciImg = CIImage(CVPixelBuffer: buffer)
-        let uiimg = UIImage(CIImage: ciImg)
         self.displayLayer.pixelBuffer = buffer
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-//            self.displayLayer.enqueueSampleBuffer(buffer)
-//            self.displayLayer.pixelBuffer = buffer
-//            self.diaplayImgView.image = uiimg
-            
-        })
-        //self.displayLayer.enqueueSampleBuffer(buffer)
         
     }
 }

@@ -108,7 +108,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 {
     while(YES)
     {
-        int readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
+        NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
         if(readBytes <= 0)
             break;
         

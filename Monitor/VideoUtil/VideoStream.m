@@ -12,10 +12,6 @@
 
 @interface VideoStream ()
 
-@property uint8_t *buffer;
-@property NSInteger bufSize;
-@property NSInteger bufferCap;
-
 @end
 
 @implementation VideoStream
@@ -24,24 +20,12 @@
 {
     self = [super init];
     
-    if(self)
-    {
-        self.bufSize = 0;
-        self.bufferCap = 1024 * 512;
-        self.buffer = malloc(self.bufferCap);
-    }
-    
     return self;
 }
 
 -(BOOL) open:(NSString *)path
 {
     return NO;
-}
-
--(void) dealloc
-{
-    free(self.buffer);
 }
 
 @end
@@ -81,39 +65,20 @@
     return YES;
 }
 
--(int) getStream:(void*) dest size:(int) size
+-(NSUInteger) getStream:(void*) dest size:(NSUInteger) size
 {
     
-    if (self.fileStream == nil) {
+    if (self.fileStream == nil || [self.fileStream hasBytesAvailable] == NO) {
         return 0;
     }
-
-    if(self.bufSize < self.bufferCap && [self.fileStream hasBytesAvailable])
-    {
-        NSInteger readBytes = [self.fileStream read:self.buffer+self.bufSize maxLength:self.bufferCap-self.bufSize];
-        self.bufSize += readBytes;
-    }
     
-    if (self.bufSize < size) {
-        size = (int)self.bufSize;
-    }
-    
-    //内存内容复制
-    memcpy(dest, self.buffer, size);
-    
-    //内存移位
-    memmove(self.buffer, self.buffer+(size), self.bufSize-size);
-    self.bufSize -= size;
-    
+    size = [self.fileStream read:dest maxLength: size];
     return size;
 }
 
 -(void) dealloc
 {
     [self.fileStream close];
-    free(self.buffer);
-    
-    self.buffer = NULL;
 }
 
 
