@@ -136,6 +136,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     
     //MARK: - VideoViewController Actions
     @objc private func backButtonClicked() {
+        videoDecoder.clear()
         dismissViewControllerAnimated(true, completion: nil)
     }
     
@@ -151,7 +152,11 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
             playBtnImg = UIImage(contentsOfFile: resourcePath!+"/playVideo.png")
         }
         
-        videoDecoder.startDecode();
+        let decodeQueue = dispatch_queue_create("decode_queue", DISPATCH_QUEUE_CONCURRENT)
+        dispatch_async(decodeQueue, { () -> Void in
+            self.videoDecoder.startDecode();
+        })
+        
         playBtn.setBackgroundImage(playBtnImg, forState: .Normal)
         
         

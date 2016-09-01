@@ -15,6 +15,9 @@
 
 #import "VideoStream.h"
 
+#define SAFE_FREE(x) if ((x)) { free((x)); (x) = NULL;}
+#define SAFE_CFRELEASE(x) if ((x)) { CFRelease((x)); (x) = NULL;}
+
 @interface VideoH264DecoderPacket : NSObject
 
 @end
@@ -36,7 +39,7 @@
 -(BOOL) open:(NSString *) path;
 -(BOOL) startDecode;
 -(void) stopDecode;
-
+-(void) clear;
 
 @end
 

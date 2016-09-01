@@ -7,15 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA51D6ED50D00A9342A /* VideoH264Decoder.m */; };
+		480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */; };
 		480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA81D6ED50D00A9342A /* VideoStream.m */; };
 		480F3BB21D6ED57100A9342A /* mtv.h264 in Resources */ = {isa = PBXBuildFile; fileRef = 480F3BB11D6ED57100A9342A /* mtv.h264 */; };
+		4811226F1D76E5B9006A269C /* Slice.h in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1BC1D76B10500CFA25F /* Slice.h */; };
 		482871941D5C84FE0098F825 /* UIContent.plist in Resources */ = {isa = PBXBuildFile; fileRef = 482871931D5C84FE0098F825 /* UIContent.plist */; };
 		4828719B1D5D65DD0098F825 /* resource.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4828719A1D5D65DD0098F825 /* resource.bundle */; };
 		4828719D1D615DCA0098F825 /* VideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4828719C1D615DCA0098F825 /* VideoViewController.swift */; };
 		482871A01D6168940098F825 /* MonitorUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4828719F1D6168940098F825 /* MonitorUtil.swift */; };
 		482871A31D62F0600098F825 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 482871A21D62F0600098F825 /* VideoToolbox.framework */; };
 		4828C1AB1D70303D00CFA25F /* AAPLEAGLLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */; };
+		4828C1B21D75254B00CFA25F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4828C1B11D75254B00CFA25F /* CoreVideo.framework */; };
+		4828C1BD1D76B10500CFA25F /* Slice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1BB1D76B10500CFA25F /* Slice.cpp */; };
 		4861ADD31D3CC0E700822200 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4861ADD21D3CC0E700822200 /* QuartzCore.framework */; };
 		4861AE191D3CC8E300822200 /* SnapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4861AE0E1D3CC8D100822200 /* SnapKit.framework */; };
 		4861AE1A1D3CC8E300822200 /* SnapKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4861AE0E1D3CC8D100822200 /* SnapKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -99,7 +102,7 @@
 /* Begin PBXFileReference section */
 		480F3BA31D6ED50D00A9342A /* Monitor-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Monitor-Bridging-Header.h"; sourceTree = "<group>"; };
 		480F3BA41D6ED50D00A9342A /* VideoH264Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoH264Decoder.h; sourceTree = "<group>"; };
-		480F3BA51D6ED50D00A9342A /* VideoH264Decoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoH264Decoder.m; sourceTree = "<group>"; };
+		480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoH264Decoder.mm; sourceTree = "<group>"; };
 		480F3BA71D6ED50D00A9342A /* VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoStream.h; sourceTree = "<group>"; };
 		480F3BA81D6ED50D00A9342A /* VideoStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoStream.m; sourceTree = "<group>"; };
 		480F3BB11D6ED57100A9342A /* mtv.h264 */ = {isa = PBXFileReference; lastKnownFileType = file; path = mtv.h264; sourceTree = "<group>"; };
@@ -110,6 +113,9 @@
 		482871A21D62F0600098F825 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		4828C1A91D70303D00CFA25F /* AAPLEAGLLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AAPLEAGLLayer.h; sourceTree = "<group>"; };
 		4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AAPLEAGLLayer.m; sourceTree = "<group>"; };
+		4828C1B11D75254B00CFA25F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		4828C1BB1D76B10500CFA25F /* Slice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Slice.cpp; sourceTree = "<group>"; };
+		4828C1BC1D76B10500CFA25F /* Slice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Slice.h; sourceTree = "<group>"; };
 		4861ADD21D3CC0E700822200 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4861AE041D3CC8D000822200 /* SnapKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SnapKit.xcodeproj; path = ../../swift/Masonry/SnapKit/SnapKit.xcodeproj; sourceTree = "<group>"; };
 		48AFBA371D630CB2008CF95B /* VideoPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
@@ -130,6 +136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4828C1B21D75254B00CFA25F /* CoreVideo.framework in Frameworks */,
 				482871A31D62F0600098F825 /* VideoToolbox.framework in Frameworks */,
 				4861ADD31D3CC0E700822200 /* QuartzCore.framework in Frameworks */,
 				48DB50C71D3CB95300E9E7D9 /* UIKit.framework in Frameworks */,
@@ -148,9 +155,11 @@
 				4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */,
 				480F3BA31D6ED50D00A9342A /* Monitor-Bridging-Header.h */,
 				480F3BA41D6ED50D00A9342A /* VideoH264Decoder.h */,
-				480F3BA51D6ED50D00A9342A /* VideoH264Decoder.m */,
+				480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */,
 				480F3BA71D6ED50D00A9342A /* VideoStream.h */,
 				480F3BA81D6ED50D00A9342A /* VideoStream.m */,
+				4828C1BB1D76B10500CFA25F /* Slice.cpp */,
+				4828C1BC1D76B10500CFA25F /* Slice.h */,
 			);
 			path = VideoUtil;
 			sourceTree = "<group>";
@@ -242,6 +251,7 @@
 		48DB50B11D3CB0E800E9E7D9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4828C1B11D75254B00CFA25F /* CoreVideo.framework */,
 				482871A21D62F0600098F825 /* VideoToolbox.framework */,
 				4861ADD21D3CC0E700822200 /* QuartzCore.framework */,
 				48DB50C61D3CB95300E9E7D9 /* UIKit.framework */,
@@ -380,13 +390,15 @@
 			files = (
 				4828C1AB1D70303D00CFA25F /* AAPLEAGLLayer.m in Sources */,
 				48AFBA381D630CB2008CF95B /* VideoPlayer.swift in Sources */,
+				4828C1BD1D76B10500CFA25F /* Slice.cpp in Sources */,
 				482871A01D6168940098F825 /* MonitorUtil.swift in Sources */,
 				48DB50AA1D3C7E1400E9E7D9 /* LoginViewController.swift in Sources */,
+				4811226F1D76E5B9006A269C /* Slice.h in Sources */,
 				480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */,
 				48DB50991D3C7C8800E9E7D9 /* ViewController.swift in Sources */,
 				4828719D1D615DCA0098F825 /* VideoViewController.swift in Sources */,
 				48DB50971D3C7C8800E9E7D9 /* AppDelegate.swift in Sources */,
-				480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.m in Sources */,
+				480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

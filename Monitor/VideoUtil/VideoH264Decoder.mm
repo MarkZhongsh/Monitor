@@ -11,11 +11,11 @@
 #import "VideoH264Decoder.h"
 #import "VideoStream.h"
 
+#import "Slice.h"
+
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
 
 @implementation VideoH264DecoderPacket
-
-
 
 @end
 
@@ -27,12 +27,15 @@ const uint8_t KStartCode[4] = { 0, 0, 0, 1};
     int bufferCap;
     
     uint8_t *sps;
-    NSInteger spsSize;
+    unsigned long spsSize;
     uint8_t *pps;
-    NSInteger ppsSize;
+    unsigned long ppsSize;
     
     VTDecompressionSessionRef decodeSession;
     CMVideoFormatDescriptionRef description;
+    
+    BOOL isStop;
+    CVPixelBufferRef lastPFrame;
 }
 
 @end
@@ -62,8 +65,10 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         fileStream = [[VideoFileStream alloc] init];
         videoDelegate = nil;
         readyToDecode = NO;
+        isStop = NO;
+        lastPFrame = NULL;
     }
-    
+
     return self;
 }
 
@@ -106,7 +111,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) startDecode
 {
-    while(YES)
+    while(!isStop)
     {
         NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
         if(readBytes <= 0 && bufSize <= 0)
@@ -120,7 +125,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             return NO;
         }
         
-        
         if( bufSize > 5)
         {
             uint8_t *bufBegin = buffer + 4;
@@ -132,7 +136,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
                     if(memcmp(bufBegin-3, KStartCode, 4) == 0)
                     {
                         NSInteger pSize = bufBegin-buffer-3;
-                        uint8_t *data = malloc(pSize);
+                        uint8_t *data = (uint8_t *)malloc(pSize);
                         memcpy(data, buffer, pSize);
                         memmove(buffer, buffer+pSize, bufSize-pSize);
                         bufSize -= pSize;
@@ -145,6 +149,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
                 bufBegin++;
             }
         }
+        usleep(16666);
     }
     
     return YES;
@@ -152,12 +157,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) stopDecode
 {
-    
+    isStop = YES;
 }
 
 -(void) dataFilter:(uint8_t*) data size:(NSInteger) size
 {
-    
     uint32_t nalSize = (uint32_t)size-4;
     uint8_t *nalSizePtr = (uint8_t*)&nalSize;
     data[0] = *(nalSizePtr+3);
@@ -166,40 +170,37 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     data[3] = *(nalSizePtr+0);
     
     int nalType = data[4] & 0x1f;
+    NSLog(@"nal type :%d", nalType);
     switch (nalType) {
         case 0x05:
             NSLog(@"this is IDR frame type");
             if([self initDecoder])
                 [self decode:data size:size];
-            NSLog(@"size is %ld", (long)size);
             break;
         case 0x07:
             NSLog(@"this is sps type");
             spsSize = size-4;
             if(sps)
                 free(sps);
-            sps = malloc(spsSize);
+            sps = (uint8_t*)malloc(spsSize);
             memcpy(sps, data+4, spsSize);
-            NSLog(@"size is %ld", (long)size);
             break;
         case 0x08:
-            NSLog(@"this is psp type");
+            NSLog(@"this is pps type");
             ppsSize = size-4;
             if(pps)
                 free(pps);
-            pps = malloc(ppsSize);
+            pps = (uint8_t*)malloc(ppsSize);
             memcpy(pps, data+4, ppsSize);
-            NSLog(@"size is %ld", (long)size);
             break;
         default:
             NSLog(@"this is B/P frame");
             [self decode:data size:size];
-            NSLog(@"size is %ld", (long)size);
             break;
     }
 }
 
--(void) decode:(uint8_t *) data size:(NSInteger) size
+-(void) decode:(uint8_t *) data size:(unsigned long) size
 {
     CVPixelBufferRef outputPixel = NULL;
     
@@ -213,11 +214,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         const size_t sampleArraySize[] = {size};
         status = CMSampleBufferCreateReady(kCFAllocatorDefault, blockBuffer, description, 1, 0, NULL, 1, sampleArraySize, &sampleBuffer);
         
-        
-        
         if(status == kCMBlockBufferNoErr && sampleBuffer)
         {
-            
             
             VTDecodeFrameFlags flags = 0;
             VTDecodeInfoFlags outFlags = 0;
@@ -236,18 +234,51 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         CFRelease(blockBuffer);
     }
     
-    if(self.videoDelegate)
+    //start code length + nalType length = 5
+    CVPixelBufferRef output = outputPixel;
+    Slice slice = Slice((uint8*)(data+5), (uint8*)(data+size-1));
+    int frame_type = slice.getSliceHeader(1);
+    NSLog(@"first_mb: %d", frame_type);
+    frame_type = slice.getSliceHeader(1);
+    NSLog(@"frame_type: %d", frame_type);
+    switch (frame_type) {
+        case 5:
+        case 0:
+        case 8:
+            output = lastPFrame;
+            lastPFrame = outputPixel;
+            break;
+            
+        default:
+            break;
+    }
+    
+    if(self.videoDelegate && output != NULL)
     {
-        [self.videoDelegate videoDecodeCallback:outputPixel];
+        [self.videoDelegate videoDecodeCallback:output];
     }
     //return outputPixel;
 }
 
--(void) dealloc
+-(void) clear
 {
     [self stopDecode];
     
-    free(buffer);
+    SAFE_FREE(sps);
+    SAFE_FREE(pps);
+    SAFE_FREE(buffer);
+    
+    VTDecompressionSessionInvalidate(decodeSession);
+    SAFE_CFRELEASE(description);
+    SAFE_CFRELEASE(lastPFrame);
+    
+}
+
+-(void) dealloc
+{
+//    [self stopDecode];
+//    [self clear];
+    
 }
 
 
