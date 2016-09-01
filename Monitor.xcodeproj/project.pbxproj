@@ -100,7 +100,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		480F3BA31D6ED50D00A9342A /* Monitor-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Monitor-Bridging-Header.h"; sourceTree = "<group>"; };
+		4804B0691D7814EA0043A0DF /* Monitor-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Monitor-Bridging-Header.h"; sourceTree = "<group>"; };
 		480F3BA41D6ED50D00A9342A /* VideoH264Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoH264Decoder.h; sourceTree = "<group>"; };
 		480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoH264Decoder.mm; sourceTree = "<group>"; };
 		480F3BA71D6ED50D00A9342A /* VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoStream.h; sourceTree = "<group>"; };
@@ -148,12 +148,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4804B0631D7814AE0043A0DF /* BridgeHeader */ = {
+			isa = PBXGroup;
+			children = (
+				4804B0691D7814EA0043A0DF /* Monitor-Bridging-Header.h */,
+			);
+			path = BridgeHeader;
+			sourceTree = "<group>";
+		};
 		480F3BA21D6ED50D00A9342A /* VideoUtil */ = {
 			isa = PBXGroup;
 			children = (
 				4828C1A91D70303D00CFA25F /* AAPLEAGLLayer.h */,
 				4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */,
-				480F3BA31D6ED50D00A9342A /* Monitor-Bridging-Header.h */,
 				480F3BA41D6ED50D00A9342A /* VideoH264Decoder.h */,
 				480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */,
 				480F3BA71D6ED50D00A9342A /* VideoStream.h */,
@@ -222,6 +229,7 @@
 		48DB50951D3C7C8800E9E7D9 /* Monitor */ = {
 			isa = PBXGroup;
 			children = (
+				4804B0631D7814AE0043A0DF /* BridgeHeader */,
 				480F3BB01D6ED57100A9342A /* Resource */,
 				480F3BA21D6ED50D00A9342A /* VideoUtil */,
 				4828719E1D6168790098F825 /* Util */,
@@ -537,7 +545,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.suihong.monitor.Monitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/VideoUtil/Monitor-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/BridgeHeader/Monitor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VALID_ARCHS = "arm64 armv7";
 			};
@@ -562,7 +570,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.suihong.monitor.Monitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/VideoUtil/Monitor-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/BridgeHeader/Monitor-Bridging-Header.h";
 				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Release;

@@ -14,6 +14,7 @@
 #import "Slice.h"
 
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
+const uint8_t StartCodeLength = 4;
 
 @implementation VideoH264DecoderPacket
 
@@ -119,36 +120,18 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         
         bufSize+= readBytes;
         
-        
-        if( memcmp(KStartCode, buffer, 4) != 0)
+        if( memcmp(KStartCode, buffer, StartCodeLength) != 0)
         {
             return NO;
         }
         
-        if( bufSize > 5)
+        NSInteger nalUnitSize = 0;
+        uint8_t *nalUnit = [self separateNalUnit:&nalUnitSize];
+        if(nalUnit != NULL && nalUnitSize != 0)
         {
-            uint8_t *bufBegin = buffer + 4;
-            uint8_t *bufEnd = buffer + bufSize;
-            while(bufBegin != bufEnd)
-            {
-                if(*bufBegin == 0x01)
-                {
-                    if(memcmp(bufBegin-3, KStartCode, 4) == 0)
-                    {
-                        NSInteger pSize = bufBegin-buffer-3;
-                        uint8_t *data = (uint8_t *)malloc(pSize);
-                        memcpy(data, buffer, pSize);
-                        memmove(buffer, buffer+pSize, bufSize-pSize);
-                        bufSize -= pSize;
-                        //[self decode:data size:pSize];
-                        [self dataFilter:data size:pSize];
-                        free(data);
-                        break;
-                    }
-                }
-                bufBegin++;
-            }
+            [self dataFilter:nalUnit size:nalUnitSize];
         }
+        
         usleep(16666);
     }
     
@@ -160,8 +143,38 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     isStop = YES;
 }
 
+-(uint8_t *) separateNalUnit:(NSInteger *) size
+{
+    //start code length + nal type length
+    if( bufSize > StartCodeLength+1)
+    {
+        uint8_t *bufBegin = buffer + StartCodeLength;
+        uint8_t *bufEnd = buffer + bufSize;
+        //search for next start code
+        while(bufBegin != bufEnd)
+        {
+            if(*bufBegin == 0x01)
+            {
+                if(memcmp(bufBegin-(StartCodeLength-1), KStartCode, StartCodeLength) == 0)
+                {
+                    *size = bufBegin-buffer-3;
+                    uint8_t *data = (uint8_t *)malloc(*size);
+                    memcpy(data, buffer, *size);
+                    memmove(buffer, buffer+*size, bufSize-*size);
+                    bufSize -= *size;
+                    return data;
+                }
+            }
+            bufBegin++;
+        }
+    }
+    return NULL;
+}
+
+
 -(void) dataFilter:(uint8_t*) data size:(NSInteger) size
 {
+    // hard decoder can only decode mp4 formart, so we should replace the start code with nal's length
     uint32_t nalSize = (uint32_t)size-4;
     uint8_t *nalSizePtr = (uint8_t*)&nalSize;
     data[0] = *(nalSizePtr+3);
@@ -170,31 +183,24 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     data[3] = *(nalSizePtr+0);
     
     int nalType = data[4] & 0x1f;
-    NSLog(@"nal type :%d", nalType);
     switch (nalType) {
         case 0x05:
-            NSLog(@"this is IDR frame type");
             if([self initDecoder])
                 [self decode:data size:size];
             break;
         case 0x07:
-            NSLog(@"this is sps type");
             spsSize = size-4;
-            if(sps)
-                free(sps);
+            SAFE_FREE(sps);
             sps = (uint8_t*)malloc(spsSize);
             memcpy(sps, data+4, spsSize);
             break;
         case 0x08:
-            NSLog(@"this is pps type");
             ppsSize = size-4;
-            if(pps)
-                free(pps);
+            SAFE_FREE(pps);
             pps = (uint8_t*)malloc(ppsSize);
             memcpy(pps, data+4, ppsSize);
             break;
         default:
-            NSLog(@"this is B/P frame");
             [self decode:data size:size];
             break;
     }
@@ -202,7 +208,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) decode:(uint8_t *) data size:(unsigned long) size
 {
-    CVPixelBufferRef outputPixel = NULL;
+    CVPixelBufferRef decodePixel = NULL;
     
     CMBlockBufferRef blockBuffer = NULL;
     
@@ -220,7 +226,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             VTDecodeFrameFlags flags = 0;
             VTDecodeInfoFlags outFlags = 0;
             
-            OSStatus decodeStatus = VTDecompressionSessionDecodeFrame(decodeSession, sampleBuffer, flags, &outputPixel, &outFlags);
+            OSStatus decodeStatus = VTDecompressionSessionDecodeFrame(decodeSession, sampleBuffer, flags, &decodePixel, &outFlags);
             if(decodeStatus == kVTInvalidSessionErr) {
                 NSLog(@"IOS8VT: Invalid session, reset decoder session");
             } else if(decodeStatus == kVTVideoDecoderBadDataErr) {
@@ -235,18 +241,16 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     }
     
     //start code length + nalType length = 5
-    CVPixelBufferRef output = outputPixel;
-    Slice slice = Slice((uint8*)(data+5), (uint8*)(data+size-1));
-    int frame_type = slice.getSliceHeader(1);
-    NSLog(@"first_mb: %d", frame_type);
-    frame_type = slice.getSliceHeader(1);
-    NSLog(@"frame_type: %d", frame_type);
+    CVPixelBufferRef output = decodePixel;
+    Slice slice = Slice((uint8*)(data+StartCodeLength+1), (uint8*)(data+size-1));
+    int frame_type = slice.getSliceHeader();
+    frame_type = slice.getSliceHeader();
     switch (frame_type) {
         case 5:
         case 0:
         case 8:
             output = lastPFrame;
-            lastPFrame = outputPixel;
+            lastPFrame = decodePixel;
             break;
             
         default:
@@ -257,7 +261,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     {
         [self.videoDelegate videoDecodeCallback:output];
     }
-    //return outputPixel;
 }
 
 -(void) clear
@@ -276,9 +279,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) dealloc
 {
-//    [self stopDecode];
-//    [self clear];
-    
 }
 
 

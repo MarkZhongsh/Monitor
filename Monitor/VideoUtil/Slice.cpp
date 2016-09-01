@@ -8,7 +8,7 @@
 
 #include "Slice.h"
 
-unsigned int Slice::getSliceHeader(int count)
+unsigned int Slice::getSliceHeader()
 {
     static constexpr unsigned int i_mask[33] =
     {

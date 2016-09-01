@@ -46,7 +46,7 @@ public:
 
     
 public:
-    unsigned int getSliceHeader(int count);
+    unsigned int getSliceHeader();
     void resetPtr();
     
     virtual ~Slice() {}
