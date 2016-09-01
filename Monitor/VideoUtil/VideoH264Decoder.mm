@@ -50,7 +50,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 @implementation VideoH264Decoder
 
-@synthesize fileStream, videoDelegate, readyToDecode;
+@synthesize fileStream, videoDelegate;
 
 
 -(id) init
@@ -65,7 +65,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         
         fileStream = [[VideoFileStream alloc] init];
         videoDelegate = nil;
-        readyToDecode = NO;
         isStop = NO;
         lastPFrame = NULL;
     }
@@ -96,9 +95,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         callbackRecord.decompressionOutputRefCon = NULL;
         
         status = VTDecompressionSessionCreate(kCFAllocatorDefault, description, NULL, attrs, &callbackRecord, &decodeSession);
-        if (status == noErr) {
-            readyToDecode = YES;
-        }
         
         CFRelease(attrs);
     }
@@ -275,6 +271,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     SAFE_CFRELEASE(description);
     SAFE_CFRELEASE(lastPFrame);
     
+    if(self.fileStream)
+       [self.fileStream close];
 }
 
 -(void) dealloc

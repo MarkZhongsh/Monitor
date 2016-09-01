@@ -32,7 +32,6 @@
 
 @property (nonatomic, retain, readonly) VideoStream *fileStream;
 @property (nonatomic, assign) id<VideoH264DecoderDelegate> videoDelegate;
-@property (nonatomic, assign, readonly) BOOL readyToDecode;
 
 -(id) init;
 -(BOOL) initDecoder;

@@ -65,6 +65,11 @@
     return YES;
 }
 
+-(void) close
+{
+    [self.fileStream close];
+}
+
 -(NSUInteger) getStream:(void*) dest size:(NSUInteger) size
 {
     

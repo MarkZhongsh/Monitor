@@ -20,6 +20,8 @@
 
 - (BOOL) open:(NSString*) path;
 
+- (void) close;
+
 @end
 
 @interface VideoFileStream : VideoStream
