@@ -18,7 +18,7 @@ const uint8_t StartCodeLength = 4;
 
 enum FrameType
 {
-    IFrame = 0, PFrame, BFrame
+    IFrame = 0, PFrame, BFrame, UnknownFrame = 99
 };
 
 @interface VideoH264DecoderPacket : NSObject
@@ -292,59 +292,80 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         CFRelease(blockBuffer);
     }
     
+    //start code length + nalType length = 5
+    Slice slice = Slice((uint8*)(data+StartCodeLength+1), (uint8*)(data+size-1));
+    int frame_type = slice.getSliceHeader();
+    frame_type = slice.getSliceHeader();
+    FrameType type;
+    switch (frame_type) {
+        case 2: case 4:
+        case 7: case 9:
+            type = IFrame;
+            break;
+        case 0:case 3:
+        case 5:case 8:
+            type = PFrame;
+            break;
+        case 1: case 6:
+            type = BFrame;
+            break;
+        default:
+            type = UnknownFrame;
+            break;
+    }
     
-    CVPixelBufferRef output = decodePixel;
+    CVPixelBufferRef output = [self getLastPiexelByFrameType:type currentFrame:decodePixel];
+    if(self.videoDelegate && output != NULL)
+    {
+        [self.videoDelegate videoDecodeCallback:output];
+    }
+}
+
+-(CVPixelBufferRef) getLastPiexelByFrameType:(FrameType) type currentFrame:(CVPixelBufferRef) frame
+{
+    CVPixelBufferRef lastFrame = frame;
+    
     VideoH264DecoderPacket *lastPacket = NULL;
     if( [frameQueue count] > 0)
     {
         lastPacket = [frameQueue objectAtIndex:0];
     }
     
-    //start code length + nalType length = 5
-    Slice slice = Slice((uint8*)(data+StartCodeLength+1), (uint8*)(data+size-1));
-    int frame_type = slice.getSliceHeader();
-    frame_type = slice.getSliceHeader();
-    switch (frame_type) {
+    switch (type) {
         //I frame
-        case 2: case 4:
-        case 7: case 9:
+        case IFrame:
             if(lastPacket != NULL)
             {
-                output = lastPacket.frame;
-                lastPacket.frame = decodePixel;
+                lastFrame = lastPacket.frame;
+                lastPacket.frame = frame;
                 lastPacket.type = IFrame;
             }
             break;
         //P frame
-        case 0:case 3:
-        case 5:case 8:
+        case PFrame:
             if(lastPacket != NULL)
             {
-                output = lastPacket.frame;
-                lastPacket.frame = decodePixel;
+                lastFrame = lastPacket.frame;
+                lastPacket.frame = frame;
                 lastPacket.type = PFrame;
             }
             else
             {
                 VideoH264DecoderPacket *packet = [[VideoH264DecoderPacket alloc] init];
-                lastPacket.frame = decodePixel;
+                lastPacket.frame = frame;
                 lastPacket.type = PFrame;
                 [frameQueue addObject:packet];
             }
             break;
         //B Frame
-        case 1: case 6:
+        case BFrame:
+            lastFrame = frame;
             break;
             
         default:
             break;
     }
-    
-    if(self.videoDelegate && output != NULL)
-    {
-//        CVPixelBufferRelease(output);
-        [self.videoDelegate videoDecodeCallback:output];
-    }
+    return lastFrame;
 }
 
 -(void) clear
