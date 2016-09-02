@@ -16,7 +16,20 @@
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
 const uint8_t StartCodeLength = 4;
 
+enum FrameType
+{
+    IFrame = 0, PFrame, BFrame
+};
+
+@interface VideoH264DecoderPacket : NSObject
+
+@property (nonatomic, assign) CVPixelBufferRef frame;
+@property (nonatomic, assign) FrameType type;
+@end
+
 @implementation VideoH264DecoderPacket
+
+@synthesize frame, type;
 
 @end
 
@@ -37,6 +50,7 @@ const uint8_t StartCodeLength = 4;
     
     BOOL finished;
     CVPixelBufferRef lastPFrame;
+    NSMutableArray<VideoH264DecoderPacket *> *frameQueue;
     
     dispatch_queue_t decodeQueue;
     BOOL decodeQueueSuspended;
@@ -45,6 +59,8 @@ const uint8_t StartCodeLength = 4;
     NSThread *thread;
     NSCondition *condition;
     NSTimer *decodeTimer;
+    
+    
 }
 
 @end
@@ -74,7 +90,9 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         fileStream = [[VideoFileStream alloc] init];
         videoDelegate = nil;
         finished = NO;
+        
         lastPFrame = NULL;
+        frameQueue = [[NSMutableArray alloc] init];
         
         decodeQueue = NULL;
         condition = [[NSCondition alloc] init];
@@ -274,17 +292,48 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         CFRelease(blockBuffer);
     }
     
-    //start code length + nalType length = 5
+    
     CVPixelBufferRef output = decodePixel;
+    VideoH264DecoderPacket *lastPacket = NULL;
+    if( [frameQueue count] > 0)
+    {
+        lastPacket = [frameQueue objectAtIndex:0];
+    }
+    
+    //start code length + nalType length = 5
     Slice slice = Slice((uint8*)(data+StartCodeLength+1), (uint8*)(data+size-1));
     int frame_type = slice.getSliceHeader();
     frame_type = slice.getSliceHeader();
     switch (frame_type) {
-        case 5:
-        case 0:
-        case 8:
-            output = lastPFrame;
-            lastPFrame = decodePixel;
+        //I frame
+        case 2: case 4:
+        case 7: case 9:
+            if(lastPacket != NULL)
+            {
+                output = lastPacket.frame;
+                lastPacket.frame = decodePixel;
+                lastPacket.type = IFrame;
+            }
+            break;
+        //P frame
+        case 0:case 3:
+        case 5:case 8:
+            if(lastPacket != NULL)
+            {
+                output = lastPacket.frame;
+                lastPacket.frame = decodePixel;
+                lastPacket.type = PFrame;
+            }
+            else
+            {
+                VideoH264DecoderPacket *packet = [[VideoH264DecoderPacket alloc] init];
+                lastPacket.frame = decodePixel;
+                lastPacket.type = PFrame;
+                [frameQueue addObject:packet];
+            }
+            break;
+        //B Frame
+        case 1: case 6:
             break;
             
         default:
@@ -293,6 +342,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     
     if(self.videoDelegate && output != NULL)
     {
+//        CVPixelBufferRelease(output);
         [self.videoDelegate videoDecodeCallback:output];
     }
 }
@@ -320,6 +370,9 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     
     [condition unlock];
     condition = nil;
+    
+    [frameQueue removeAllObjects];
+    frameQueue = nil;
 }
 
 -(void) dealloc

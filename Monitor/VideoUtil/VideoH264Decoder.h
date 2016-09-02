@@ -18,9 +18,7 @@
 #define SAFE_FREE(x) if ((x)) { free((x)); (x) = NULL;}
 #define SAFE_CFRELEASE(x) if ((x)) { CFRelease((x)); (x) = NULL;}
 
-@interface VideoH264DecoderPacket : NSObject
 
-@end
 
 @protocol VideoH264DecoderDelegate <NSObject>
 
