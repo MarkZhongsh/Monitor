@@ -35,8 +35,16 @@ const uint8_t StartCodeLength = 4;
     VTDecompressionSessionRef decodeSession;
     CMVideoFormatDescriptionRef description;
     
-    BOOL isStop;
+    BOOL finished;
     CVPixelBufferRef lastPFrame;
+    
+    dispatch_queue_t decodeQueue;
+    BOOL decodeQueueSuspended;
+    
+    NSOperationQueue *decodeOperationQueue;
+    NSThread *thread;
+    NSCondition *condition;
+    NSTimer *decodeTimer;
 }
 
 @end
@@ -65,8 +73,13 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         
         fileStream = [[VideoFileStream alloc] init];
         videoDelegate = nil;
-        isStop = NO;
+        finished = NO;
         lastPFrame = NULL;
+        
+        decodeQueue = NULL;
+        condition = [[NSCondition alloc] init];
+        decodeTimer = NULL;
+        
     }
 
     return self;
@@ -108,17 +121,46 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) startDecode
 {
-    while(!isStop)
+    if(decodeOperationQueue == NULL)
+    {
+        decodeOperationQueue = [[NSOperationQueue alloc] init];
+        NSInvocationOperation *decodeOperation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(decode) object:nil];
+        [decodeOperationQueue addOperation:decodeOperation];
+        
+        decodeQueueSuspended = NO;
+    }
+    
+    if(decodeQueueSuspended)
+    {
+        decodeQueueSuspended = NO;
+        [condition unlock];
+    }
+    
+    return YES;
+}
+
+-(void) stopDecode
+{
+    if(decodeQueueSuspended == NO)
+    {
+        decodeQueueSuspended = YES;
+        [condition lock];
+    }
+}
+
+-(void) decode
+{
+    do
     {
         NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
         if(readBytes <= 0 && bufSize <= 0)
-            break;
+            return;
         
         bufSize+= readBytes;
         
         if( memcmp(KStartCode, buffer, StartCodeLength) != 0)
         {
-            return NO;
+            return ;
         }
         
         NSInteger nalUnitSize = 0;
@@ -128,15 +170,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             [self dataFilter:nalUnit size:nalUnitSize];
         }
         
-        usleep(16666);
-    }
-    
-    return YES;
-}
-
--(void) stopDecode
-{
-    isStop = YES;
+        usleep(18000);
+        
+        [condition lock];
+        [condition unlock];
+    }while(!finished);
 }
 
 -(uint8_t *) separateNalUnit:(NSInteger *) size
@@ -261,6 +299,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) clear
 {
+    finished = YES;
+    
     [self stopDecode];
     
     SAFE_FREE(sps);
@@ -273,10 +313,18 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     
     if(self.fileStream)
        [self.fileStream close];
+    
+    if( decodeOperationQueue != NULL)
+        [decodeOperationQueue cancelAllOperations];
+    decodeOperationQueue = nil;
+    
+    [condition unlock];
+    condition = nil;
 }
 
 -(void) dealloc
 {
+    
 }
 
 

@@ -146,20 +146,15 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         var playBtnImg: UIImage!
         let resourcePath = MonitorUtil.GetResourceBundlePath()
         if isPlaying == true {
+            self.videoDecoder.startDecode();
             playBtnImg = UIImage(contentsOfFile: resourcePath!+"/pauseVideo.png")
         }
         else {
+            self.videoDecoder.stopDecode();
             playBtnImg = UIImage(contentsOfFile: resourcePath!+"/playVideo.png")
         }
         
-        let decodeQueue = dispatch_queue_create("decode_queue", DISPATCH_QUEUE_CONCURRENT)
-        dispatch_async(decodeQueue, { () -> Void in
-            self.videoDecoder.startDecode();
-        })
-        
         playBtn.setBackgroundImage(playBtnImg, forState: .Normal)
-        
-        
     }
     
     @objc private func tapVideoView() {
