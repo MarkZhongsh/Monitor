@@ -15,6 +15,7 @@
 
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
 const uint8_t StartCodeLength = 4;
+const int MaxPatternLength = 30;
 
 enum FrameType
 {
@@ -97,6 +98,13 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         decodeQueue = NULL;
         condition = [[NSCondition alloc] init];
         decodeTimer = NULL;
+        
+        
+        const char *pattern = "ABCDABD";
+        const char *str = "BBC ABCDAB ABCDABCDABDE";
+//        int next[MaxPatternLength] = {0};
+        [self compareString:str pattern:pattern];
+//        [self getNext:pattern next:next];
         
     }
 
@@ -223,6 +231,63 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     return NULL;
 }
 
+-(unsigned long) compareString:(const char *) str pattern:(const char*) pattern
+{
+    if(strcmp(str, "") == 0 || strcmp(pattern, "") == 0)
+        return -1;
+    
+    int next[MaxPatternLength] = {0};
+    [self getNext:pattern next:next];
+    
+    unsigned long strLen = strlen((char *) str);
+    unsigned long patternLen = strlen((char *) pattern);
+    unsigned long strInx=0, patternInx=0;
+    
+    while(strInx < strLen)
+    {
+        //搜索成功
+        if(patternInx >= patternLen)
+            return strInx-patternLen;
+        
+        if(str[strInx] == pattern[patternInx])
+        {
+            patternInx++;
+        }
+        else
+        {
+            if(patternInx != 0)
+            {
+                patternInx = next[patternInx-1];
+                continue;
+            }
+        }
+        
+        strInx++;
+    }
+    
+    
+    return -1;
+}
+
+-(void) getNext:(const char *) pattern next:(int*) next
+{
+    unsigned long patternLen = strlen((char *)pattern);
+    int i , k = 0;
+    
+    next[0] = 0;
+    
+    for(i = 1; i < patternLen; i++)
+    {
+        if( k > 0 && pattern[i] != pattern[k])
+            k = next[k-1];
+        
+        if( pattern[i] == pattern[k] )
+            k++;
+        next[i] = k;
+    }
+    
+    
+}
 
 -(void) dataFilter:(uint8_t*) data size:(NSInteger) size
 {
