@@ -87,6 +87,7 @@ static const GLfloat kColorConversion709[] = {
         CVPixelBufferRelease(_pixelBuffer);
     }
     _pixelBuffer = CVPixelBufferRetain(pb);
+    
 
     int frameWidth = (int)CVPixelBufferGetWidth(_pixelBuffer);
     int frameHeight = (int)CVPixelBufferGetHeight(_pixelBuffer);

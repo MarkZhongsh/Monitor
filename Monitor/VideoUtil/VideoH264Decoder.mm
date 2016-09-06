@@ -16,6 +16,7 @@
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
 const uint8_t StartCodeLength = 4;
 const int MaxPatternLength = 30;
+const int DataLength = 1024*128;
 
 enum FrameType
 {
@@ -88,6 +89,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         bufferCap = 512 * 1024;
         buffer = (uint8_t*) malloc(bufferCap);
         
+        sps = (uint8_t*) malloc(sizeof(uint8_t)*1024);
+        spsSize = 0;
+        pps = (uint8_t*) malloc(sizeof(uint8_t)*1024);
+        ppsSize = 0;
+        
         fileStream = [[VideoFileStream alloc] init];
         videoDelegate = nil;
         finished = NO;
@@ -98,13 +104,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         decodeQueue = NULL;
         condition = [[NSCondition alloc] init];
         decodeTimer = NULL;
-        
-        
-        const char *pattern = "ABCDABD";
-        const char *str = "BBC ABCDAB ABCDABCDABDE";
-//        int next[MaxPatternLength] = {0};
-        [self compareString:str pattern:pattern];
-//        [self getNext:pattern next:next];
         
     }
 
@@ -189,21 +188,25 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             return ;
         }
         
+        uint8_t data[DataLength] = "";
         NSInteger nalUnitSize = 0;
-        uint8_t *nalUnit = [self separateNalUnit:&nalUnitSize];
-        if(nalUnit != NULL && nalUnitSize != 0)
+//        uint8_t *nalUnit = [self separateNalUnit:&nalUnitSize];
+        nalUnitSize = [self separateNalUnit:data];
+//        if(nalUnit != NULL && nalUnitSize != 0)
+        if(nalUnitSize != 0)
         {
-            [self dataFilter:nalUnit size:nalUnitSize];
+            [self dataFilter:data size:nalUnitSize];
         }
+//        SAFE_FREE(nalUnit);
         
-        usleep(18000);
+        usleep(16666);
         
         [condition lock];
         [condition unlock];
     }while(!finished);
 }
 
--(uint8_t *) separateNalUnit:(NSInteger *) size
+-(NSInteger) separateNalUnit:(uint8_t *) data
 {
     //start code length + nal type length
     if( bufSize > StartCodeLength+1)
@@ -217,12 +220,13 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             {
                 if(memcmp(bufBegin-(StartCodeLength-1), KStartCode, StartCodeLength) == 0)
                 {
-                    *size = bufBegin-buffer-3;
-                    uint8_t *data = (uint8_t *)malloc(*size);
-                    memcpy(data, buffer, *size);
-                    memmove(buffer, buffer+*size, bufSize-*size);
-                    bufSize -= *size;
-                    return data;
+                    long size = bufBegin-buffer-3;
+//                    *size = bufBegin-buffer-3;
+//                    uint8_t *data = (uint8_t *)malloc(*size);
+                    memcpy(data, buffer, size);
+                    memmove(buffer, buffer+size, bufSize-size);
+                    bufSize -= size;
+                    return size;
                 }
             }
             bufBegin++;
@@ -307,14 +311,16 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             break;
         case 0x07:
             spsSize = size-4;
-            SAFE_FREE(sps);
-            sps = (uint8_t*)malloc(spsSize);
+//            SAFE_FREE(sps);
+//            sps = (uint8_t*)malloc(spsSize);
+            memset(sps, 0, 1024);
             memcpy(sps, data+4, spsSize);
             break;
         case 0x08:
             ppsSize = size-4;
-            SAFE_FREE(pps);
-            pps = (uint8_t*)malloc(ppsSize);
+//            SAFE_FREE(pps);
+//            pps = (uint8_t*)malloc(ppsSize);
+            memset(pps, 0, 1024);
             memcpy(pps, data+4, ppsSize);
             break;
         default:
@@ -383,6 +389,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     if(self.videoDelegate && output != NULL)
     {
         [self.videoDelegate videoDecodeCallback:output];
+        CVPixelBufferRelease(output);
     }
 }
 
@@ -451,7 +458,9 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
        [self.fileStream close];
     
     if( decodeOperationQueue != NULL)
+    {
         [decodeOperationQueue cancelAllOperations];
+    }
     decodeOperationQueue = nil;
     
     [condition unlock];

@@ -28,10 +28,9 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.whiteColor()
+        view.backgroundColor = UIColor.blackColor()
         
         topView = createTopView()
-        topView.backgroundColor = UIColor.redColor()
         view.addSubview(topView)
         topView.snp_makeConstraints(closure: { (make) -> Void in
             let time = 11
@@ -40,7 +39,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         })
         
         bottomView = createBottomView()
-        bottomView.backgroundColor = UIColor.blueColor()
+        bottomView.backgroundColor = UIColor.whiteColor()
         view.addSubview(bottomView)
         bottomView.snp_makeConstraints(closure: { (make) -> Void in
             let time = 11
@@ -49,12 +48,11 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         })
         
         let videoView = createVideoView()
-//        videoView.backgroundColor = UIColor.brownColor()
         view.insertSubview(videoView, atIndex: 0)
         videoView.snp_makeConstraints(closure: { (make) -> Void in
             make.leading.trailing.equalTo(videoView.superview!)
             make.top.bottom.equalTo(videoView.superview!)
-        })
+        }) 
         
     }
     
@@ -84,7 +82,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         
         let title = UILabel()
         title.text = videoTitle
-        title.textColor = UIColor.blackColor()
+        title.textColor = UIColor.whiteColor()
         title.textAlignment = .Center
         title.numberOfLines = 1
         title.lineBreakMode = .ByTruncatingTail
@@ -136,6 +134,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     
     //MARK: - VideoViewController Actions
     @objc private func backButtonClicked() {
+        videoDecoder.stopDecode()
         videoDecoder.clear()
         dismissViewControllerAnimated(true, completion: nil)
     }
@@ -210,6 +209,10 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     func setVideoBuffer(buffer: CVPixelBufferRef) {
         self.displayLayer.pixelBuffer = buffer
         
+    }
+    
+    deinit {
+        displayLayer = nil
     }
 }
 
