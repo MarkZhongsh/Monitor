@@ -14,7 +14,7 @@
 #import "Slice.h"
 
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
-const uint8_t StartCodeLength = 4;
+const uint32_t StartCodeLength = 4;
 const int MaxPatternLength = 30;
 const int DataLength = 1024*128;
 
@@ -85,6 +85,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     
     if(self)
     {
+        decodeSession = NULL;
+        
         bufSize = 0;
         bufferCap = 512 * 1024;
         buffer = (uint8_t*) malloc(bufferCap);
@@ -190,14 +192,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         
         uint8_t data[DataLength] = "";
         NSInteger nalUnitSize = 0;
-//        uint8_t *nalUnit = [self separateNalUnit:&nalUnitSize];
         nalUnitSize = [self separateNalUnit:data];
-//        if(nalUnit != NULL && nalUnitSize != 0)
         if(nalUnitSize != 0)
         {
             [self dataFilter:data size:nalUnitSize];
         }
-//        SAFE_FREE(nalUnit);
         
         usleep(16666);
         
@@ -211,86 +210,70 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     //start code length + nal type length
     if( bufSize > StartCodeLength+1)
     {
-        uint8_t *bufBegin = buffer + StartCodeLength;
-        uint8_t *bufEnd = buffer + bufSize;
-        //search for next start code
-        while(bufBegin != bufEnd)
+        long startCodeIndex = [self sundayFindSubString:buffer+StartCodeLength strLen:bufSize-StartCodeLength subStr:KStartCode subStrLen:StartCodeLength];
+        if(startCodeIndex >= 0)
         {
-            if(*bufBegin == 0x01)
-            {
-                if(memcmp(bufBegin-(StartCodeLength-1), KStartCode, StartCodeLength) == 0)
-                {
-                    long size = bufBegin-buffer-3;
-//                    *size = bufBegin-buffer-3;
-//                    uint8_t *data = (uint8_t *)malloc(*size);
-                    memcpy(data, buffer, size);
-                    memmove(buffer, buffer+size, bufSize-size);
-                    bufSize -= size;
-                    return size;
-                }
-            }
-            bufBegin++;
+            long size = startCodeIndex + StartCodeLength;
+            memcpy(data, buffer, size);
+            memmove(buffer, buffer+size, bufSize-size);
+            bufSize -= size;
+            return size;
         }
     }
-    return NULL;
+    return 0;
 }
 
--(unsigned long) compareString:(const char *) str pattern:(const char*) pattern
+
+-(long) sundayFindSubString:(const uint8_t *) str strLen:(int) strLen subStr:(const uint8_t*) subStr subStrLen:(int) subStrLen
 {
-    if(strcmp(str, "") == 0 || strcmp(pattern, "") == 0)
+
+    if( strLen <= 0 || subStrLen <= 0)
         return -1;
     
-    int next[MaxPatternLength] = {0};
-    [self getNext:pattern next:next];
+    long strInx = 0, subStrInx = 0;
+    long nextCompare = subStrLen;
     
-    unsigned long strLen = strlen((char *) str);
-    unsigned long patternLen = strlen((char *) pattern);
-    unsigned long strInx=0, patternInx=0;
-    
-    while(strInx < strLen)
+    while(strInx < strLen && subStrInx < subStrLen)
     {
-        //搜索成功
-        if(patternInx >= patternLen)
-            return strInx-patternLen;
-        
-        if(str[strInx] == pattern[patternInx])
+        if(memcmp(str+strInx, subStr+subStrInx, sizeof(uint8_t)) == 0)
         {
-            patternInx++;
+            strInx++;
+            subStrInx++;
+        }
+        else if(nextCompare < strLen)
+        {
+            long i;
+            //搜索子串中是否有该字符
+            for(i=subStrLen-1; i >= 0; i--)
+            {
+                
+                if(memcmp(subStr+i, str+nextCompare, sizeof(uint8_t)) == 0)
+                {
+                    subStrInx = 0;
+                    long move = subStrLen-i;
+                    strInx = nextCompare-i;
+                    nextCompare += move;
+                    break;
+                }
+            }
+            
+            //子串中无下一个字符
+            if(i < 0)
+            {
+                strInx = nextCompare+1;
+                subStrInx = 0;
+                nextCompare += subStrLen+1;
+            }
+            
         }
         else
-        {
-            if(patternInx != 0)
-            {
-                patternInx = next[patternInx-1];
-                continue;
-            }
-        }
-        
-        strInx++;
+            return -1;
     }
     
+    if(subStrInx == subStrLen)
+        return strInx-subStrInx;
     
     return -1;
-}
-
--(void) getNext:(const char *) pattern next:(int*) next
-{
-    unsigned long patternLen = strlen((char *)pattern);
-    int i , k = 0;
-    
-    next[0] = 0;
-    
-    for(i = 1; i < patternLen; i++)
-    {
-        if( k > 0 && pattern[i] != pattern[k])
-            k = next[k-1];
-        
-        if( pattern[i] == pattern[k] )
-            k++;
-        next[i] = k;
-    }
-    
-    
 }
 
 -(void) dataFilter:(uint8_t*) data size:(NSInteger) size
