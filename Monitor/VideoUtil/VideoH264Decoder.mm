@@ -15,7 +15,6 @@
 
 const uint8_t KStartCode[4] = { 0, 0, 0, 1};
 const uint32_t StartCodeLength = 4;
-const int MaxPatternLength = 30;
 const int DataLength = 1024*128;
 
 enum FrameType
@@ -54,14 +53,7 @@ enum FrameType
     CVPixelBufferRef lastPFrame;
     NSMutableArray<VideoH264DecoderPacket *> *frameQueue;
     
-    dispatch_queue_t decodeQueue;
-    BOOL decodeQueueSuspended;
-    
-    NSOperationQueue *decodeOperationQueue;
-    NSThread *thread;
-    NSCondition *condition;
-    NSTimer *decodeTimer;
-    
+    CADisplayLink *displayTimer;
     
 }
 
@@ -103,10 +95,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         lastPFrame = NULL;
         frameQueue = [[NSMutableArray alloc] init];
         
-        decodeQueue = NULL;
-        condition = [[NSCondition alloc] init];
-        decodeTimer = NULL;
-        
+        displayTimer = NULL;
     }
 
     return self;
@@ -148,37 +137,30 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) startDecode
 {
-    if(decodeOperationQueue == NULL)
+    if(displayTimer == NULL)
     {
-        decodeOperationQueue = [[NSOperationQueue alloc] init];
-        NSInvocationOperation *decodeOperation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(decode) object:nil];
-        [decodeOperationQueue addOperation:decodeOperation];
+        displayTimer = [CADisplayLink displayLinkWithTarget:self selector:@selector(decode)];
+        displayTimer.paused = NO;
+        displayTimer.frameInterval = 2;
+        NSRunLoop *runloop = [NSRunLoop currentRunLoop];
+        [displayTimer addToRunLoop:runloop forMode:NSRunLoopCommonModes];
         
-        decodeQueueSuspended = NO;
     }
     
-    if(decodeQueueSuspended)
-    {
-        decodeQueueSuspended = NO;
-        [condition unlock];
-    }
+    displayTimer.paused = NO;
     
     return YES;
 }
 
 -(void) stopDecode
 {
-    if(decodeQueueSuspended == NO)
-    {
-        decodeQueueSuspended = YES;
-        [condition lock];
-    }
+    displayTimer.paused = YES;
 }
 
 -(void) decode
 {
-    do
-    {
+//    do
+//    {
         NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
         if(readBytes <= 0 && bufSize <= 0)
             return;
@@ -198,11 +180,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             [self dataFilter:data size:nalUnitSize];
         }
         
-        usleep(16666);
-        
-        [condition lock];
-        [condition unlock];
-    }while(!finished);
+//        usleep(16666);
+    
+//        [condition lock];
+//        [condition unlock];
+//    }while(!finished);
 }
 
 -(NSInteger) separateNalUnit:(uint8_t *) data
@@ -294,15 +276,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
             break;
         case 0x07:
             spsSize = size-4;
-//            SAFE_FREE(sps);
-//            sps = (uint8_t*)malloc(spsSize);
             memset(sps, 0, 1024);
             memcpy(sps, data+4, spsSize);
             break;
         case 0x08:
             ppsSize = size-4;
-//            SAFE_FREE(pps);
-//            pps = (uint8_t*)malloc(ppsSize);
             memset(pps, 0, 1024);
             memcpy(pps, data+4, ppsSize);
             break;
@@ -440,17 +418,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     if(self.fileStream)
        [self.fileStream close];
     
-    if( decodeOperationQueue != NULL)
-    {
-        [decodeOperationQueue cancelAllOperations];
-    }
-    decodeOperationQueue = nil;
-    
-    [condition unlock];
-    condition = nil;
-    
     [frameQueue removeAllObjects];
     frameQueue = nil;
+    
+    [displayTimer invalidate];
+    displayTimer = nil;
 }
 
 -(void) dealloc
