@@ -13,22 +13,22 @@ import UIKit
 import AVFoundation
 
 
-class VideoViewController: UIViewController, VideoH264DecoderDelegate {
+class VideoViewController: UIViewController, VideoH264DecoderDelegate, CAAnimationDelegate {
     var videoTitle: String? = "大爷般的Swift工工工工工工"
     
-    private var topView: UIView!
-    private var bottomView: UIView!
-    private var displayLayer: AAPLEAGLLayer!
-    private var diaplayImgView: UIImageView!
+    fileprivate var topView: UIView!
+    fileprivate var bottomView: UIView!
+    fileprivate var displayLayer: AAPLEAGLLayer!
+    fileprivate var diaplayImgView: UIImageView!
     
-    private var isPlaying: Bool = false
-    private var isAnimating: Bool = false
+    fileprivate var isPlaying: Bool = false
+    fileprivate var isAnimating: Bool = false
     
-    private var videoDecoder: VideoH264Decoder!
+    fileprivate var videoDecoder: VideoH264Decoder!
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.blackColor()
+        view.backgroundColor = UIColor.black
         
         topView = createTopView()
         view.addSubview(topView)
@@ -39,7 +39,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         })
         
         bottomView = createBottomView()
-        bottomView.backgroundColor = UIColor.whiteColor()
+        bottomView.backgroundColor = UIColor.white
         view.addSubview(bottomView)
         bottomView.snp_makeConstraints(closure: { (make) -> Void in
             let time = 11
@@ -48,7 +48,7 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         })
         
         let videoView = createVideoView()
-        view.insertSubview(videoView, atIndex: 0)
+        view.insertSubview(videoView, at: 0)
         videoView.snp_makeConstraints(closure: { (make) -> Void in
             make.leading.trailing.equalTo(videoView.superview!)
             make.top.bottom.equalTo(videoView.superview!)
@@ -57,23 +57,23 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     }
     
     override func viewDidLayoutSubviews() {
-        if displayLayer != nil && CGRectIsEmpty(displayLayer.frame) == true {
+        if displayLayer != nil && displayLayer.frame.isEmpty == true {
             let layer = self.view.layer
-            let bounds = CGRectMake(layer.bounds.origin.x, layer.bounds.origin.y, layer.bounds.width, layer.bounds.height)
+            let bounds = CGRect(x: layer.bounds.origin.x, y: layer.bounds.origin.y, width: layer.bounds.width, height: layer.bounds.height)
             displayLayer.bounds = bounds
-            displayLayer.position = CGPointMake(CGRectGetMidX(layer.bounds), CGRectGetMidY(layer.bounds))
+            displayLayer.position = CGPoint(x: layer.bounds.midX, y: layer.bounds.midY)
             
         }
     }
     
-    private func createTopView() -> UIView {
+    fileprivate func createTopView() -> UIView {
         let view = UIView()
         
         let backBtn = UIButton()
         let resourcePath = MonitorUtil.GetResourceBundlePath()
         let leftArrImg = UIImage(contentsOfFile: resourcePath!+"/leftArrow.png")
-        backBtn.setImage(leftArrImg, forState: .Normal)
-        backBtn.addTarget(self, action: #selector(backButtonClicked), forControlEvents: .TouchUpInside)
+        backBtn.setImage(leftArrImg, for: UIControlState())
+        backBtn.addTarget(self, action: #selector(backButtonClicked), for: .touchUpInside)
         view.addSubview(backBtn)
         backBtn.snp_makeConstraints(closure: { (make) -> Void in
             make.top.leading.bottom.equalTo(backBtn.superview!)
@@ -82,10 +82,10 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         
         let title = UILabel()
         title.text = videoTitle
-        title.textColor = UIColor.whiteColor()
-        title.textAlignment = .Center
+        title.textColor = UIColor.white
+        title.textAlignment = .center
         title.numberOfLines = 1
-        title.lineBreakMode = .ByTruncatingTail
+        title.lineBreakMode = .byTruncatingTail
         view.addSubview(title)
         title.snp_makeConstraints(closure: { (make) -> Void in
             let time = 2
@@ -96,14 +96,14 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         return view
     }
     
-    private func createBottomView() -> UIView {
+    fileprivate func createBottomView() -> UIView {
         let view = UIView()
         
         let playBtn = UIButton()
         let resourcePath = MonitorUtil.GetResourceBundlePath()
         let playBtnImg = UIImage(contentsOfFile: resourcePath!+"/playVideo.png")
-        playBtn.setBackgroundImage(playBtnImg, forState: .Normal)
-        playBtn.addTarget(self, action: #selector(playButtonClicked(playBtn:)), forControlEvents: .TouchUpInside)
+        playBtn.setBackgroundImage(playBtnImg, for: UIControlState())
+        playBtn.addTarget(self, action: #selector(playButtonClicked(playBtn:)), for: .touchUpInside)
         view.addSubview(playBtn)
         playBtn.snp_makeConstraints(closure: { (make) -> Void in
             let offset = 2
@@ -115,17 +115,17 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
         return view
     }
     
-    private func createVideoView() -> UIView {
+    fileprivate func createVideoView() -> UIView {
         let view = UIView()
         
         let tapVideoGes = UITapGestureRecognizer(target: self, action: #selector(tapVideoView))
         view.addGestureRecognizer(tapVideoGes)
         
-        displayLayer = AAPLEAGLLayer(frame: UIScreen.mainScreen().bounds)
+        displayLayer = AAPLEAGLLayer(frame: UIScreen.main.bounds)
         view.layer.addSublayer(displayLayer)
         
         videoDecoder = VideoH264Decoder()
-        let videoPath = NSBundle.mainBundle().pathForResource("mtv", ofType: "h264")
+        let videoPath = Bundle.main.path(forResource: "mtv", ofType: "h264")
         videoDecoder.open(videoPath)
         videoDecoder.videoDelegate = self
         
@@ -133,13 +133,13 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
     }
     
     //MARK: - VideoViewController Actions
-    @objc private func backButtonClicked() {
+    @objc fileprivate func backButtonClicked() {
         videoDecoder.stopDecode()
         videoDecoder.clear()
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
-    @objc private func playButtonClicked(playBtn btn: AnyObject) {
+    @objc fileprivate func playButtonClicked(playBtn btn: AnyObject) {
         let playBtn = btn as! UIButton
         isPlaying = !isPlaying
         var playBtnImg: UIImage!
@@ -153,10 +153,10 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
             playBtnImg = UIImage(contentsOfFile: resourcePath!+"/playVideo.png")
         }
         
-        playBtn.setBackgroundImage(playBtnImg, forState: .Normal)
+        playBtn.setBackgroundImage(playBtnImg, for: UIControlState())
     }
     
-    @objc private func tapVideoView() {
+    @objc fileprivate func tapVideoView() {
         
         //若动画正在进行, 则直接返回
         if isAnimating == true {
@@ -185,28 +185,28 @@ class VideoViewController: UIViewController, VideoH264DecoderDelegate {
             bottomView.layer.opacity = 0.0
         }
         
-        topView.layer.addAnimation(fadeAnimation, forKey: "topFade")
-        bottomView.layer.addAnimation(fadeAnimation, forKey: "bottomFade")
+        topView.layer.add(fadeAnimation, forKey: "topFade")
+        bottomView.layer.add(fadeAnimation, forKey: "bottomFade")
     }
     
     //MARK: - CAAnimation Delegate Selector
-    override func animationDidStart(anim: CAAnimation) {
+    func animationDidStart(_ anim: CAAnimation) {
         isAnimating = true
     }
     
-    override func animationDidStop(anim: CAAnimation, finished flag: Bool) {
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         isAnimating = false
     }
     
     //MARK: - VideoH264Decoder Deleagte
-    func videoDecodeCallback(pixelBuff: CVPixelBufferRef?) {
+    func videoDecodeCallback(_ pixelBuff: CVPixelBuffer?) {
         if pixelBuff != nil {
             self.setVideoBuffer(pixelBuff!)
         }
     }
     
     //MARK: - Video Operation
-    func setVideoBuffer(buffer: CVPixelBufferRef) {
+    func setVideoBuffer(_ buffer: CVPixelBuffer) {
         self.displayLayer.pixelBuffer = buffer
         
     }

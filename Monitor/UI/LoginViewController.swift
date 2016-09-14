@@ -12,7 +12,7 @@ import UIKit
 
 
 protocol LoginDelegate {
-    func login(account: String, password: String)
+    func login(_ account: String, password: String)
 }
 
 class LoginViewController : UIViewController, UITextFieldDelegate {
@@ -90,7 +90,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         let title = UILabel()
         if let dict = MonitorUtil.UiContentDictionary() {
             title.text = dict["Title"] as? String
-            title.font = title.font.fontWithSize(30)
+            title.font = title.font.withSize(30)
         }
         
         view.addSubview(title)
@@ -108,8 +108,8 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         accountFiled = UITextField()
         let dict:Dictionary<String, AnyObject>! = MonitorUtil.UiContentDictionary()
         accountFiled.placeholder = dict["AccountHint"] as? String
-        accountFiled.borderStyle = .RoundedRect
-        accountFiled.returnKeyType = .Next
+        accountFiled.borderStyle = .roundedRect
+        accountFiled.returnKeyType = .next
         accountFiled.delegate = self
         
         view.addSubview(accountFiled)
@@ -126,10 +126,10 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         pwdField = UITextField()
         let dict:Dictionary<String, AnyObject>! = MonitorUtil.UiContentDictionary()
         pwdField.placeholder = dict["PwdHint"] as? String
-        pwdField.borderStyle = .RoundedRect
-        pwdField.secureTextEntry = true
+        pwdField.borderStyle = .roundedRect
+        pwdField.isSecureTextEntry = true
         pwdField.delegate = self
-        pwdField.returnKeyType = .Done
+        pwdField.returnKeyType = .done
         
         view.addSubview(pwdField)
         pwdField.snp_makeConstraints(closure: { (make) -> Void in
@@ -143,7 +143,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         let view = UIView()
         
         let switchBtn = UISwitch()
-        switchBtn.on = true
+        switchBtn.isOn = true
         if let resourcePath = MonitorUtil.GetResourceBundlePath() {
             switchBtn.onImage = UIImage(contentsOfFile: resourcePath+"/check.png")
             switchBtn.offImage = UIImage(contentsOfFile: resourcePath+"/uncheck.png")
@@ -186,12 +186,12 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         let resourcePath = MonitorUtil.GetResourceBundlePath()
         
         let loginBtn = UIButton()
-        loginBtn.addTarget(self, action: #selector(loginAction), forControlEvents: .TouchUpInside)
+        loginBtn.addTarget(self, action: #selector(loginAction), for: .touchUpInside)
         if let uiInfo = MonitorUtil.UiContentDictionary() {
-            loginBtn.setTitle(uiInfo["Login"] as? String, forState: .Normal)
+            loginBtn.setTitle(uiInfo["Login"] as? String, for: UIControlState())
             
-            let bg = UIImage(contentsOfFile: resourcePath!+"/btn_bg.png")?.resizableImageWithCapInsets(UIEdgeInsets(top: 4, left: 14, bottom: 28, right: 17), resizingMode: .Stretch)
-            loginBtn.setBackgroundImage(bg, forState: .Normal)
+            let bg = UIImage(contentsOfFile: resourcePath!+"/btn_bg.png")?.resizableImage(withCapInsets: UIEdgeInsets(top: 4, left: 14, bottom: 28, right: 17), resizingMode: .stretch)
+            loginBtn.setBackgroundImage(bg, for: UIControlState())
         }
 //        view.backgroundColor = UIColor.blueColor()
         view.layer.cornerRadius = 5.0
@@ -204,11 +204,11 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         })
         
         let regBtn = UIButton()
-        regBtn.addTarget(self, action: #selector(registrationAction), forControlEvents: .TouchUpInside)
+        regBtn.addTarget(self, action: #selector(registrationAction), for: .touchUpInside)
         if let uiInfo = MonitorUtil.UiContentDictionary() {
-            regBtn.setTitle(uiInfo["Register"] as? String, forState: .Normal)
-            let bg = UIImage(contentsOfFile: resourcePath!+"/btn_bg.png")?.resizableImageWithCapInsets(UIEdgeInsets(top: 4, left: 14, bottom: 28, right: 17), resizingMode: .Tile)
-            regBtn.setBackgroundImage(bg, forState: .Normal)
+            regBtn.setTitle(uiInfo["Register"] as? String, for: UIControlState())
+            let bg = UIImage(contentsOfFile: resourcePath!+"/btn_bg.png")?.resizableImage(withCapInsets: UIEdgeInsets(top: 4, left: 14, bottom: 28, right: 17), resizingMode: .tile)
+            regBtn.setBackgroundImage(bg, for: UIControlState())
             
         }
         
@@ -240,7 +240,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         self.delegate?.login("", password: "")
         
         let videoViewCtrl = VideoViewController()
-        presentViewController(videoViewCtrl, animated: true, completion: nil)
+        present(videoViewCtrl, animated: true, completion: nil)
         
     }
     
@@ -249,14 +249,14 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
     }
     
     //MARK: - UITextFieldDelegate 
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         
-        if textField.returnKeyType == .Next {
+        if textField.returnKeyType == .next {
             textField.resignFirstResponder()
             self.pwdField.becomeFirstResponder()
-            textField.nextResponder()
+            textField.next
         }
-        else if textField.returnKeyType == .Done {
+        else if textField.returnKeyType == .done {
             textField.resignFirstResponder()
         }
         

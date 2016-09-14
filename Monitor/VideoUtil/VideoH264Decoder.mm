@@ -89,6 +89,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         ppsSize = 0;
         
         fileStream = [[VideoFileStream alloc] init];
+        //fileStream = [[VideoNetworkStream alloc] init];
         videoDelegate = nil;
         finished = NO;
         
@@ -132,6 +133,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) open:(NSString *)path
 {
+    //[self.fileStream openAddr:@"192.168.8.40" port:4000];
+    //return YES;
     return [self.fileStream open:path];
 }
 
@@ -159,8 +162,6 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) decode
 {
-//    do
-//    {
         NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
         if(readBytes <= 0 && bufSize <= 0)
             return;
@@ -179,12 +180,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         {
             [self dataFilter:data size:nalUnitSize];
         }
-        
-//        usleep(16666);
     
-//        [condition lock];
-//        [condition unlock];
-//    }while(!finished);
 }
 
 -(NSInteger) separateNalUnit:(uint8_t *) data

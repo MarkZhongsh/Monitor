@@ -14,7 +14,7 @@
 
 @interface VideoStream : NSObject
 
--(id) init;
+- (instancetype) init;
 
 - (NSUInteger) getStream:(void*) dest size:(NSUInteger) size;
 
@@ -26,12 +26,14 @@
 
 @interface VideoFileStream : VideoStream
 
--(id) init;
+- (instancetype) init;
 
 
 @end
 
 @interface VideoNetworkStream : VideoStream
+
+- (BOOL) openAddr:(NSString *) addr port:(int) port;
 
 @end
 

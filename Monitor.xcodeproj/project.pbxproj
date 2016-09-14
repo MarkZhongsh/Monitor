@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4804B07B1D828E780043A0DF /* Socket.m in Sources */ = {isa = PBXBuildFile; fileRef = 4804B07A1D828E780043A0DF /* Socket.m */; };
+		4804B07D1D82A0880043A0DF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4804B07C1D82A0880043A0DF /* CoreFoundation.framework */; };
 		480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */; };
 		480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA81D6ED50D00A9342A /* VideoStream.m */; };
 		480F3BB21D6ED57100A9342A /* mtv.h264 in Resources */ = {isa = PBXBuildFile; fileRef = 480F3BB11D6ED57100A9342A /* mtv.h264 */; };
@@ -101,6 +103,9 @@
 
 /* Begin PBXFileReference section */
 		4804B0691D7814EA0043A0DF /* Monitor-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Monitor-Bridging-Header.h"; sourceTree = "<group>"; };
+		4804B0791D828E6B0043A0DF /* Socket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Socket.h; sourceTree = "<group>"; };
+		4804B07A1D828E780043A0DF /* Socket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Socket.m; sourceTree = "<group>"; };
+		4804B07C1D82A0880043A0DF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		480F3BA41D6ED50D00A9342A /* VideoH264Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoH264Decoder.h; sourceTree = "<group>"; };
 		480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoH264Decoder.mm; sourceTree = "<group>"; };
 		480F3BA71D6ED50D00A9342A /* VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoStream.h; sourceTree = "<group>"; };
@@ -136,6 +141,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4804B07D1D82A0880043A0DF /* CoreFoundation.framework in Frameworks */,
 				4828C1B21D75254B00CFA25F /* CoreVideo.framework in Frameworks */,
 				482871A31D62F0600098F825 /* VideoToolbox.framework in Frameworks */,
 				4861ADD31D3CC0E700822200 /* QuartzCore.framework in Frameworks */,
@@ -154,6 +160,15 @@
 				4804B0691D7814EA0043A0DF /* Monitor-Bridging-Header.h */,
 			);
 			path = BridgeHeader;
+			sourceTree = "<group>";
+		};
+		4804B0701D828DF90043A0DF /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				4804B0791D828E6B0043A0DF /* Socket.h */,
+				4804B07A1D828E780043A0DF /* Socket.m */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 		480F3BA21D6ED50D00A9342A /* VideoUtil */ = {
@@ -229,6 +244,7 @@
 		48DB50951D3C7C8800E9E7D9 /* Monitor */ = {
 			isa = PBXGroup;
 			children = (
+				4804B0701D828DF90043A0DF /* Network */,
 				4804B0631D7814AE0043A0DF /* BridgeHeader */,
 				480F3BB01D6ED57100A9342A /* Resource */,
 				480F3BA21D6ED50D00A9342A /* VideoUtil */,
@@ -259,6 +275,7 @@
 		48DB50B11D3CB0E800E9E7D9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4804B07C1D82A0880043A0DF /* CoreFoundation.framework */,
 				4828C1B11D75254B00CFA25F /* CoreVideo.framework */,
 				482871A21D62F0600098F825 /* VideoToolbox.framework */,
 				4861ADD21D3CC0E700822200 /* QuartzCore.framework */,
@@ -303,6 +320,7 @@
 					48DB50921D3C7C8800E9E7D9 = {
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = 3ZANFTT8M7;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -404,6 +422,7 @@
 				4811226F1D76E5B9006A269C /* Slice.h in Sources */,
 				480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */,
 				48DB50991D3C7C8800E9E7D9 /* ViewController.swift in Sources */,
+				4804B07B1D828E780043A0DF /* Socket.m in Sources */,
 				4828719D1D615DCA0098F825 /* VideoViewController.swift in Sources */,
 				48DB50971D3C7C8800E9E7D9 /* AppDelegate.swift in Sources */,
 				480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.mm in Sources */,
@@ -547,6 +566,7 @@
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/BridgeHeader/Monitor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Debug;
@@ -571,6 +591,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/BridgeHeader/Monitor-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Release;

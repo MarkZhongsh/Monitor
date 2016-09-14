@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "VideoStream.h"
+#import "Socket.h"
 
 @interface VideoStream ()
 
@@ -86,12 +87,74 @@
     [self.fileStream close];
 }
 
+@end
 
 
 
+#pragma mark - Video Network Stream
+@interface VideoNetworkStream () <SocketDelegate>
+{
+    Socket *udp;
+}
 
 
 @end
+
+@implementation VideoNetworkStream
+
+-(instancetype) init
+{
+    self = [super init];
+    
+    if(self)
+    {
+        udp = [[Socket alloc] init];
+        [udp setDelegate:self];
+    }
+    
+    return self;
+}
+
+-(BOOL) openAddr:(NSString *)addr port:(int)port
+{
+    [udp setUpSocketType:SocketUdp];
+    return [udp connectToAddress:addr port:port];
+}
+
+#pragma mark - Socket Delegate
+-(void) readCallback
+{
+    NSLog(@"read call back");
+}
+
+-(void) writeCallback
+{
+    NSLog(@"write call back");
+}
+
+-(void) connectCallback
+{
+    NSLog(@"connect call back");
+}
+
+
+-(void) dealloc
+{
+    udp = nil;
+}
+
+@end
+
+
+
+
+
+
+
+
+
+
+
 
 
 

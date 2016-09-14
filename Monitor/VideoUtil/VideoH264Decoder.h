@@ -28,7 +28,8 @@
 
 @interface VideoH264Decoder : NSObject
 
-@property (nonatomic, retain, readonly) VideoStream *fileStream;
+//@property (nonatomic, retain, readonly) VideoNetworkStream *fileStream;
+@property (nonatomic, retain, readonly) VideoFileStream *fileStream;
 @property (nonatomic, assign) id<VideoH264DecoderDelegate> videoDelegate;
 
 -(id) init;

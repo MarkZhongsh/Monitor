@@ -13,7 +13,7 @@ class VideoPlayer: CAEAGLLayer {
     
     
     
-    func initWithFrame(fame: CGRect) {
+    func initWithFrame(_ fame: CGRect) {
         
     }
     
