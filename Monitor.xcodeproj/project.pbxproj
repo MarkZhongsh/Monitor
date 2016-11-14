@@ -12,6 +12,7 @@
 		480F3BAB1D6ED50D00A9342A /* VideoH264Decoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA51D6ED50D00A9342A /* VideoH264Decoder.mm */; };
 		480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 480F3BA81D6ED50D00A9342A /* VideoStream.m */; };
 		480F3BB21D6ED57100A9342A /* mtv.h264 in Resources */ = {isa = PBXBuildFile; fileRef = 480F3BB11D6ED57100A9342A /* mtv.h264 */; };
+		480F624A1DD5635200C3CED3 /* NaluUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 480F62491DD5635200C3CED3 /* NaluUtil.m */; };
 		4811226F1D76E5B9006A269C /* Slice.h in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1BC1D76B10500CFA25F /* Slice.h */; };
 		482871941D5C84FE0098F825 /* UIContent.plist in Resources */ = {isa = PBXBuildFile; fileRef = 482871931D5C84FE0098F825 /* UIContent.plist */; };
 		4828719B1D5D65DD0098F825 /* resource.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4828719A1D5D65DD0098F825 /* resource.bundle */; };
@@ -21,6 +22,7 @@
 		4828C1AB1D70303D00CFA25F /* AAPLEAGLLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */; };
 		4828C1B21D75254B00CFA25F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4828C1B11D75254B00CFA25F /* CoreVideo.framework */; };
 		4828C1BD1D76B10500CFA25F /* Slice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1BB1D76B10500CFA25F /* Slice.cpp */; };
+		482C3DC31DC34C2E002BC144 /* RTPUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 482C3DC21DC34C2E002BC144 /* RTPUtil.m */; };
 		4861ADD31D3CC0E700822200 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4861ADD21D3CC0E700822200 /* QuartzCore.framework */; };
 		4861AE191D3CC8E300822200 /* SnapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4861AE0E1D3CC8D100822200 /* SnapKit.framework */; };
 		4861AE1A1D3CC8E300822200 /* SnapKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4861AE0E1D3CC8D100822200 /* SnapKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -111,6 +113,8 @@
 		480F3BA71D6ED50D00A9342A /* VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoStream.h; sourceTree = "<group>"; };
 		480F3BA81D6ED50D00A9342A /* VideoStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoStream.m; sourceTree = "<group>"; };
 		480F3BB11D6ED57100A9342A /* mtv.h264 */ = {isa = PBXFileReference; lastKnownFileType = file; path = mtv.h264; sourceTree = "<group>"; };
+		480F62431DD5633E00C3CED3 /* NaluUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NaluUtil.h; sourceTree = "<group>"; };
+		480F62491DD5635200C3CED3 /* NaluUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NaluUtil.m; sourceTree = "<group>"; };
 		482871931D5C84FE0098F825 /* UIContent.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UIContent.plist; sourceTree = "<group>"; };
 		4828719A1D5D65DD0098F825 /* resource.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = resource.bundle; sourceTree = "<group>"; };
 		4828719C1D615DCA0098F825 /* VideoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoViewController.swift; sourceTree = "<group>"; };
@@ -121,6 +125,8 @@
 		4828C1B11D75254B00CFA25F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		4828C1BB1D76B10500CFA25F /* Slice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Slice.cpp; sourceTree = "<group>"; };
 		4828C1BC1D76B10500CFA25F /* Slice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Slice.h; sourceTree = "<group>"; };
+		482C3DC21DC34C2E002BC144 /* RTPUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTPUtil.m; sourceTree = "<group>"; };
+		482C3DC41DC34C58002BC144 /* RTPUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTPUtil.h; sourceTree = "<group>"; };
 		4861ADD21D3CC0E700822200 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4861AE041D3CC8D000822200 /* SnapKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SnapKit.xcodeproj; path = ../../swift/Masonry/SnapKit/SnapKit.xcodeproj; sourceTree = "<group>"; };
 		48AFBA371D630CB2008CF95B /* VideoPlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPlayer.swift; sourceTree = "<group>"; };
@@ -165,8 +171,12 @@
 		4804B0701D828DF90043A0DF /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				482C3DC41DC34C58002BC144 /* RTPUtil.h */,
 				4804B0791D828E6B0043A0DF /* Socket.h */,
 				4804B07A1D828E780043A0DF /* Socket.m */,
+				482C3DC21DC34C2E002BC144 /* RTPUtil.m */,
+				480F62431DD5633E00C3CED3 /* NaluUtil.h */,
+				480F62491DD5635200C3CED3 /* NaluUtil.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -321,6 +331,7 @@
 						CreatedOnToolsVersion = 7.3;
 						DevelopmentTeam = 3ZANFTT8M7;
 						LastSwiftMigration = 0800;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -417,11 +428,13 @@
 				4828C1AB1D70303D00CFA25F /* AAPLEAGLLayer.m in Sources */,
 				48AFBA381D630CB2008CF95B /* VideoPlayer.swift in Sources */,
 				4828C1BD1D76B10500CFA25F /* Slice.cpp in Sources */,
+				482C3DC31DC34C2E002BC144 /* RTPUtil.m in Sources */,
 				482871A01D6168940098F825 /* MonitorUtil.swift in Sources */,
 				48DB50AA1D3C7E1400E9E7D9 /* LoginViewController.swift in Sources */,
 				4811226F1D76E5B9006A269C /* Slice.h in Sources */,
 				480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */,
 				48DB50991D3C7C8800E9E7D9 /* ViewController.swift in Sources */,
+				480F624A1DD5635200C3CED3 /* NaluUtil.m in Sources */,
 				4804B07B1D828E780043A0DF /* Socket.m in Sources */,
 				4828719D1D615DCA0098F825 /* VideoViewController.swift in Sources */,
 				48DB50971D3C7C8800E9E7D9 /* AppDelegate.swift in Sources */,
@@ -549,8 +562,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3ZANFTT8M7;
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -564,6 +578,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.suihong.monitor.Monitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Monitor/BridgeHeader/Monitor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
@@ -576,8 +591,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3ZANFTT8M7;
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

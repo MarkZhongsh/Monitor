@@ -12,8 +12,9 @@
 #import "VideoStream.h"
 
 #import "Slice.h"
+#import "NaluUtil.h"
 
-const uint8_t KStartCode[4] = { 0, 0, 0, 1};
+const uint8_t StartCode[4] = { 0, 0, 0, 1};
 const uint32_t StartCodeLength = 4;
 const int DataLength = 1024*128;
 
@@ -88,8 +89,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         pps = (uint8_t*) malloc(sizeof(uint8_t)*1024);
         ppsSize = 0;
         
-        fileStream = [[VideoFileStream alloc] init];
-        //fileStream = [[VideoNetworkStream alloc] init];
+//        fileStream = [[VideoFileStream alloc] init];
+        fileStream = [[VideoNetworkStream alloc] init];
         videoDelegate = nil;
         finished = NO;
         
@@ -133,9 +134,9 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) open:(NSString *)path
 {
-    //[self.fileStream openAddr:@"192.168.8.40" port:4000];
-    //return YES;
-    return [self.fileStream open:path];
+    [self.fileStream openAddr:@"192.168.8.128" port:4000];
+    return YES;
+//    return [self.fileStream open:path];
 }
 
 -(BOOL) startDecode
@@ -168,11 +169,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         
         bufSize+= readBytes;
         
-        if( memcmp(KStartCode, buffer, StartCodeLength) != 0)
-        {
-            return ;
-        }
-        
+//        if( memcmp(KStartCode, buffer, StartCodeLength) != 0)
+//        {
+//            return ;
+//        }
+    
         uint8_t data[DataLength] = "";
         NSInteger nalUnitSize = 0;
         nalUnitSize = [self separateNalUnit:data];
@@ -188,7 +189,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     //start code length + nal type length
     if( bufSize > StartCodeLength+1)
     {
-        long startCodeIndex = [self sundayFindSubString:buffer+StartCodeLength strLen:bufSize-StartCodeLength subStr:KStartCode subStrLen:StartCodeLength];
+        long startCodeIndex = [self sundayFindSubString:buffer+StartCodeLength strLen:bufSize-StartCodeLength subStr:StartCode subStrLen:StartCodeLength];
         if(startCodeIndex >= 0)
         {
             long size = startCodeIndex + StartCodeLength;

@@ -16,6 +16,7 @@
 #import "Socket.h"
 
 #define CFSAFE_RELEASE(x) { if((x)) { CFRelease(x); (x) = NULL; } }
+#define SOCKETERRORDOMAIN @"com.personal.socket"
 
 static void SocketCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info)
 {
@@ -75,62 +76,69 @@ static void SocketCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef a
 {
     if(socketfd < 0)
         return NO;
-    
-    struct sockaddr_in addr4;
-    
-    struct hostent *host = gethostbyname([addr UTF8String]);
-    if(host->h_length <= 0)
-    {
-        NSLog(@"cant not get IP from the url: %@",addr );
-        return NO;
-    }
-    memset(&addr4, 0, sizeof(addr4));
-    addr4.sin_len = sizeof(addr4);
-    addr4.sin_family = AF_INET;
-    addr4.sin_port = htons(port);
-    inet_pton(AF_INET, inet_ntoa(*((struct in_addr*)host->h_addr_list[0])), &addr4.sin_addr);
-    socklen_t len = sizeof(addr4);
-    
-    //udp打洞
-    char *digHoleText = "hole";
-    ssize_t sendNum = sendto(socketfd, (void*)digHoleText, 5, 0, (struct sockaddr*)&addr4, len);
-    if(sendNum < 0)
-    {
-        NSLog(@"send error: %s", strerror(errno));
-        return NO;
-    }
-    
-    uint8_t data[31] = "";
-    long recvNum = 0;
-    while((recvNum = recvfrom(socketfd, data, 30, 0, (struct sockaddr*)&addr4, &len) != 0))
-    {
-        NSLog(@"recvNum: %ld", recvNum);
-        NSLog(@"len: %u", len);
-        NSLog(@"data: %s", data);
-    }
-    return YES;
-}
 
--(BOOL) natSessionSave:(NSString *) addr port:(int) port error:(NSError *) error
-{
-    if(socketfd <= 0)
+    //udp打洞
+    NSError *error;
+    BOOL result = [self natSessionSave:addr port:port error:&error];
+    if(!result)
+    {
+        NSLog(@"error msg: %@", [error localizedDescription]);
         return NO;
+    }
     
     struct hostent *host = gethostbyname([addr UTF8String]);
     if(host == NULL || host->h_length <= 0)
+    {
+//        *error = [NSError errorWithDomain:SOCKETERRORDOMAIN code:NoHost userInfo:@{NSLocalizedDescriptionKey:@"can't find host"}];
         return NO;
+    }
+    struct sockaddr_in srvSock;
+    memset(&srvSock, 0, sizeof(srvSock));
+    srvSock.sin_len = sizeof(srvSock);
+    srvSock.sin_family = AF_INET;
+    srvSock.sin_port = htons(port);
+    inet_pton(AF_INET, inet_ntoa(*((struct in_addr*)host->h_addr_list[0])), &srvSock.sin_addr);
+    
+    int res = connect(socketfd, (struct sockaddr *)&srvSock, sizeof(srvSock));
+    if(res != 0)
+    {
+        NSLog(@"%s", strerror(errno));
+        return NO;
+    }
+    
+    return YES;
+}
+
+-(BOOL) natSessionSave:(NSString *) addr port:(int) port error:(NSError **) error
+{
+    
+    if(socketfd <= 0)
+    {
+        *error = [NSError errorWithDomain:SOCKETERRORDOMAIN code:SocketNotInit userInfo:@{NSLocalizedDescriptionKey:@"socket is not init"}];
+        return NO;
+    }
+    
+    struct hostent *host = gethostbyname([addr UTF8String]);
+    if(host == NULL || host->h_length <= 0)
+    {
+        *error = [NSError errorWithDomain:SOCKETERRORDOMAIN code:NoHost userInfo:@{NSLocalizedDescriptionKey:@"can't find host"}];
+        return NO;
+    }
     
     struct sockaddr_in natAddr;
     memset(&natAddr, 0, sizeof(natAddr));
+    natAddr.sin_len = sizeof(natAddr);
     natAddr.sin_family = AF_INET;
     natAddr.sin_port = htons(port);
-    natAddr.sin_len = sizeof(natAddr);
-    inet_pton(socketfd, inet_ntoa(*((struct in_addr*)host->h_addr_list[0])), &natAddr.sin_addr);
+    inet_pton(AF_INET, inet_ntoa(*((struct in_addr*)host->h_addr_list[0])), &natAddr.sin_addr);
+    socklen_t len = sizeof(natAddr);
     
-    const char *natMsg = "natMsg";
-    long num = sendto(socketfd, natMsg, strlen(natMsg)+1, 0, (struct sockaddr*)&natAddr, sizeof(natAddr));
+    uint8_t natMsg[7] = "natMsg";
+    long num = sendto(socketfd, natMsg, strlen((char*)natMsg)+1, 0, (struct sockaddr*)&natAddr, len);
+    //sendto(socketfd, "test", 5, 0, (struct sockaddr*)&addr4, len);
     if(num <= 0)
     {
+        *error = [NSError errorWithDomain:SOCKETERRORDOMAIN code:NATSessionNotSave userInfo:@{NSLocalizedDescriptionKey:@"can't not NAT save"}];
         return NO;
     }
     
@@ -139,52 +147,143 @@ static void SocketCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef a
     num = recvfrom(socketfd, buff, 7, 0, (struct sockaddr*) &natAddr, &natAddrLen);
     if(num <= 0)
     {
+        *error = [NSError errorWithDomain:SOCKETERRORDOMAIN code:NATSessionNotSave userInfo:@{NSLocalizedDescriptionKey:@"can't not NAT save"}];
         return NO;
     }
+    NSLog(@"recv msg: %s", buff);
+    *error = nil;
     
     return YES;
 }
 
--(BOOL) disConnect
+-(NSInteger) readData:(UInt32 *)data maxLength:(UInt32)length
 {
-    if(_socket == NULL)
-        return NO;
     
-    if(CFSocketIsValid(_socket))
-        CFSocketInvalidate(_socket);
+    int retryTime = 0;
+    NSInteger readNum = 0;
     
-    return YES;
+    //超时重试3次
+//    while(retryTime < 3)
+    while(true)
+    {
+        fd_set readSet;
+        fd_set errSet;
+        __DARWIN_FD_ZERO(&readSet);
+        __DARWIN_FD_ZERO(&errSet);
+        __DARWIN_FD_SET(socketfd, &readSet);
+        
+        struct timeval time;
+        time.tv_usec = 2;
+        time.tv_sec = 2;
+        
+        int ret = select(socketfd+1, &readSet, NULL, &errSet, &time);
+        if( ret == 0) //timeout
+        {
+            retryTime ++;
+            continue;
+        }
+        if( ret < 0)
+        {
+            NSLog(@"select error: %s", strerror(errno));
+            break;
+        }
+        if(__DARWIN_FD_ISSET(socketfd, &errSet))
+        {
+            NSLog(@"select error: %s", strerror(errno));
+            retryTime++;
+            continue;
+        }
+        if(__DARWIN_FD_ISSET(socketfd, &readSet))
+        {
+            readNum = recv(socketfd, data, length, 0);
+            break;
+        }
+    }
+    
+    return readNum;
 }
 
--(long) readData:(UInt32 *)data maxLength:(UInt32)length
+-(NSData *) recvData
 {
-    ssize_t readLen = recv(CFSocketGetNative(_socket), data, length, MSG_DONTWAIT);
-    return readLen;
+    
+    fd_set readSet;
+    __DARWIN_FD_ZERO(&readSet);
+    __DARWIN_FD_SET(socketfd, &readSet);
+    
+    struct timeval time;
+    time.tv_sec = 2;
+    time.tv_usec = 2;
+    int ret = select(socketfd+1, &readSet, NULL, NULL, &time);
+    if(ret == -1)
+    {
+        NSLog(@"select error: %s", strerror(errno));
+        return nil;
+    }
+
+    char buff[2048] = "";
+    NSData *data = nil;
+    if(__DARWIN_FD_ISSET(socketfd, &readSet))
+    {
+        long readBytes = recv(socketfd, buff, 2048, 0);
+        data = [NSData dataWithBytes:buff length:readBytes];
+        NSLog(@"read byte: %ld", readBytes);
+    }
+    else
+    {
+        NSLog(@"time out");
+    }
+    
+    return data;
 }
 
--(long) read:(UInt32*) data length:(UInt32) length
+-(long) sendData:(NSData *) data
 {
-    if(_socket == NULL || CFSocketIsValid(_socket) == NO)
+    fd_set writeSet;
+    __DARWIN_FD_ZERO(&writeSet);
+    __DARWIN_FD_SET(socketfd, &writeSet);
+    
+    struct timeval time;
+    time.tv_sec = 2;
+    time.tv_usec = 0;
+    
+    int res = select(socketfd+1, NULL, &writeSet, NULL, &time);
+    if(res == -1)
+    {
+        NSLog(@"select error :%s", strerror(errno));
         return 0;
+    }
     
+    long sendNum = 0;
+    if(__DARWIN_FD_ISSET(socketfd, &writeSet))
+    {
+        sendNum = send(socketfd, [data bytes], [data length], 0);
+        if(sendNum < 0)
+            NSLog(@"send error: %s", strerror(errno));
+    }
+    else
+    {
+        NSLog(@"timeout");
+    }
     
     
     return 0;
 }
 
--(long) writeData:(UInt32 *)data length:(UInt32)length
+
+
+-(void) disConnect
 {
-    if(_socket == NULL || CFSocketIsValid(_socket) == NO)
-        return 0;
+    if(socketfd == 0)
+        return ;
     
-    return 0;
+    close(socketfd);
+    socketfd = 0;
+    
 }
 
 -(void) dealloc
 {
-    if(CFSocketIsValid(_socket))
-        CFSocketInvalidate(_socket);
-    CFSAFE_RELEASE(_socket);
+    
 }
 
 

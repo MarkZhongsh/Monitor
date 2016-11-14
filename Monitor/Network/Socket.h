@@ -16,6 +16,11 @@ typedef enum
     SocketTcp = SOCK_STREAM, SocketUdp = SOCK_DGRAM
 } SocketType;
 
+typedef enum
+{
+  SocketNotInit = -1000, NoHost, NATSessionNotSave,
+} SocketErrorCode;
+
 @protocol SocketDelegate <NSObject>
 
 -(void) readCallback;
@@ -36,9 +41,9 @@ typedef enum
 
 -(BOOL) connectToAddress:(NSString*) addr port:(int) port;
 
--(BOOL) disConnect;
+-(void) disConnect;
 
--(long) readData:(UInt32*) data maxLength:(UInt32) length;
+-(NSInteger) readData:(UInt32*) data maxLength:(UInt32) length;
 
 -(long) writeData:(UInt32*) data length:(UInt32) length;
 
