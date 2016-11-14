@@ -63,7 +63,7 @@ struct FU_Indicator {
 
 struct FU_Header {
     u_char type:5;      //类型
-    u_char retain:1;    //保留位, 一般为0
+    u_char remain:1;    //保留位, 一般为0
     u_char end:1;       //结束位, 当结束位为1时开始位不能为0
     u_char start:1;     //开始位, 当开始位为1时结束位不能为0
 };

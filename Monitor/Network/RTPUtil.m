@@ -113,7 +113,7 @@
     NSLog(@"header type: %d", header->type);
     NSLog(@"header start: %d", header->start);
     NSLog(@"header end: %d", header->end);
-    NSLog(@"header R: %d", header->retain);
+    NSLog(@"header R: %d", header->remain);
     NSLog(@"fu header end -----------------------------");
     
     return true;
