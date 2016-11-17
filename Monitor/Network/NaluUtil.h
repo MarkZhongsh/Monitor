@@ -16,7 +16,7 @@
 
 struct Nalu
 {
-    char data[2048];
+    char data[8192];
     UInt32 len;
 };
 

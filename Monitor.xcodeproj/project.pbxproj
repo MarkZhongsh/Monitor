@@ -19,6 +19,7 @@
 		4828719D1D615DCA0098F825 /* VideoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4828719C1D615DCA0098F825 /* VideoViewController.swift */; };
 		482871A01D6168940098F825 /* MonitorUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4828719F1D6168940098F825 /* MonitorUtil.swift */; };
 		482871A31D62F0600098F825 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 482871A21D62F0600098F825 /* VideoToolbox.framework */; };
+		4828966D1DDD9DA00046BEAE /* LogUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4828966C1DDD9DA00046BEAE /* LogUtil.m */; };
 		4828C1AB1D70303D00CFA25F /* AAPLEAGLLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */; };
 		4828C1B21D75254B00CFA25F /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4828C1B11D75254B00CFA25F /* CoreVideo.framework */; };
 		4828C1BD1D76B10500CFA25F /* Slice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4828C1BB1D76B10500CFA25F /* Slice.cpp */; };
@@ -120,6 +121,8 @@
 		4828719C1D615DCA0098F825 /* VideoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoViewController.swift; sourceTree = "<group>"; };
 		4828719F1D6168940098F825 /* MonitorUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MonitorUtil.swift; sourceTree = "<group>"; };
 		482871A21D62F0600098F825 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
+		4828966B1DDD9D4C0046BEAE /* LogUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LogUtil.h; sourceTree = "<group>"; };
+		4828966C1DDD9DA00046BEAE /* LogUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogUtil.m; sourceTree = "<group>"; };
 		4828C1A91D70303D00CFA25F /* AAPLEAGLLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AAPLEAGLLayer.h; sourceTree = "<group>"; };
 		4828C1AA1D70303D00CFA25F /* AAPLEAGLLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AAPLEAGLLayer.m; sourceTree = "<group>"; };
 		4828C1B11D75254B00CFA25F /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -212,6 +215,15 @@
 			path = Util;
 			sourceTree = "<group>";
 		};
+		482896651DDD9D270046BEAE /* OCUtil */ = {
+			isa = PBXGroup;
+			children = (
+				4828966B1DDD9D4C0046BEAE /* LogUtil.h */,
+				4828966C1DDD9DA00046BEAE /* LogUtil.m */,
+			);
+			path = OCUtil;
+			sourceTree = "<group>";
+		};
 		4861AE051D3CC8D000822200 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -254,6 +266,7 @@
 		48DB50951D3C7C8800E9E7D9 /* Monitor */ = {
 			isa = PBXGroup;
 			children = (
+				482896651DDD9D270046BEAE /* OCUtil */,
 				4804B0701D828DF90043A0DF /* Network */,
 				4804B0631D7814AE0043A0DF /* BridgeHeader */,
 				480F3BB01D6ED57100A9342A /* Resource */,
@@ -433,6 +446,7 @@
 				48DB50AA1D3C7E1400E9E7D9 /* LoginViewController.swift in Sources */,
 				4811226F1D76E5B9006A269C /* Slice.h in Sources */,
 				480F3BAD1D6ED50D00A9342A /* VideoStream.m in Sources */,
+				4828966D1DDD9DA00046BEAE /* LogUtil.m in Sources */,
 				48DB50991D3C7C8800E9E7D9 /* ViewController.swift in Sources */,
 				480F624A1DD5635200C3CED3 /* NaluUtil.m in Sources */,
 				4804B07B1D828E780043A0DF /* Socket.m in Sources */,
@@ -569,6 +583,11 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Monitor/TrdFrameworks",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					"MONITOR_DEBUG=1",
 				);
 				INFOPLIST_FILE = Monitor/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;

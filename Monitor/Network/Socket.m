@@ -185,6 +185,8 @@ static void SocketCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef a
         if( ret < 0)
         {
             NSLog(@"select error: %s", strerror(errno));
+            if(EINTR == errno)
+                continue;
             break;
         }
         if(__DARWIN_FD_ISSET(socketfd, &errSet))

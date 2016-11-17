@@ -85,8 +85,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         buffer = (uint8_t*) malloc(bufferCap);
         
         sps = (uint8_t*) malloc(sizeof(uint8_t)*1024);
+        memset(sps, 0, sizeof(uint8_t)*1024);
         spsSize = 0;
+        
         pps = (uint8_t*) malloc(sizeof(uint8_t)*1024);
+        memset(pps, 0, sizeof(uint8_t)*1024);
         ppsSize = 0;
         
 //        fileStream = [[VideoFileStream alloc] init];
@@ -134,7 +137,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) open:(NSString *)path
 {
-    [self.fileStream openAddr:@"192.168.8.128" port:4000];
+    [self.fileStream openAddr:@"192.168.6.178" port:4000];
     return YES;
 //    return [self.fileStream open:path];
 }
@@ -145,7 +148,8 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     {
         displayTimer = [CADisplayLink displayLinkWithTarget:self selector:@selector(decode)];
         displayTimer.paused = NO;
-        displayTimer.frameInterval = 2;
+//        displayTimer.frameInterval = 2;
+        displayTimer.preferredFramesPerSecond = 15;
         NSRunLoop *runloop = [NSRunLoop currentRunLoop];
         [displayTimer addToRunLoop:runloop forMode:NSRunLoopCommonModes];
         
@@ -163,24 +167,24 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) decode
 {
-        NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
-        if(readBytes <= 0 && bufSize <= 0)
-            return;
-        
-        bufSize+= readBytes;
-        
-//        if( memcmp(KStartCode, buffer, StartCodeLength) != 0)
-//        {
-//            return ;
-//        }
+    NSUInteger readBytes = [self.fileStream getStream:buffer+bufSize size:bufferCap-bufSize];
+    if(readBytes <= 0 && bufSize <= 0)
+        return;
     
-        uint8_t data[DataLength] = "";
-        NSInteger nalUnitSize = 0;
-        nalUnitSize = [self separateNalUnit:data];
-        if(nalUnitSize != 0)
-        {
-            [self dataFilter:data size:nalUnitSize];
-        }
+    bufSize+= readBytes;
+    
+    //        if( memcmp(KStartCode, buffer, StartCodeLength) != 0)
+    //        {
+    //            return ;
+    //        }
+    
+    uint8_t data[DataLength] = "";
+    NSInteger nalUnitSize = 0;
+    nalUnitSize = [self separateNalUnit:data];
+    if(nalUnitSize != 0)
+    {
+        [self dataFilter:data size:nalUnitSize];
+    }
     
 }
 

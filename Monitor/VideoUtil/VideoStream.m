@@ -129,24 +129,30 @@
 
 -(NSUInteger) getStream:(void *) dest size:(NSUInteger)size
 {
+    if(size <= 0)
+        return 0;
+    
     int mark = 1, end = 1; //标记位 结束位
-    char buf[16384] = "";
+    char buf[65536] = "";
+    memset(buf, 0, sizeof(buf));
     int bufIndex = 0;
+    
+    NSLog(@"deal with data start ------------------------------");
     do
     {
-        NSLog(@"deal with data start ------------------------------");
-        
-        char tmpBuf[1024] = "";
+        char tmpBuf[2048] = "";
+        memset(tmpBuf, 0, sizeof(tmpBuf));
         int tmpSize = (int)[udp readData:(void*)tmpBuf maxLength:(UInt32) size];
         struct RTPHeader *rtpHdr = [RTPUtil HeaderDecode:tmpBuf length:tmpSize];
         mark = rtpHdr->detail.marker;
+        const int csrcLen = rtpHdr->detail.csrcLen*4;
         
         if(mark == 1 && end == 1)
         {
-            void *naluData = tmpBuf+12+rtpHdr->detail.csrcLen*4;
-            int naluDataLen = tmpSize-12-rtpHdr->detail.csrcLen*4;
+            void *naluData = tmpBuf+12+csrcLen;
+            int naluDataLen = tmpSize-12-csrcLen;
             struct Nalu nalu;
-            memset(nalu.data, 0, sizeof(char)*2048);
+            memset(nalu.data, 0, sizeof(struct Nalu));
             bool success = [NaluUtil addStartCode:naluData size:naluDataLen nalu:&nalu];
             if(success) {
                 memcpy(buf, nalu.data, nalu.len);
@@ -154,8 +160,10 @@
             }
         }
         else {
-            void * fuData = tmpBuf+12;
-            int fuDataLen = tmpSize-14;
+            void *fuData = tmpBuf+12+csrcLen;
+            void *fuPayload = fuData+2;
+            int fuPayloadLen = tmpSize-12-csrcLen-2;
+            
             struct FU_Indicator indicator;
             bool indSuc = [RTPUtil FUIndicatorDecode:fuData length:1 indicator:&indicator];
             struct FU_Header header;
@@ -168,8 +176,8 @@
             }
             
             end = header.end;
-            memcpy(buf+bufIndex, fuData, fuDataLen);
-            bufIndex += fuDataLen;
+            memcpy(buf+bufIndex, fuPayload, fuPayloadLen);
+            bufIndex += fuPayloadLen;
             
             // time to create nalu
             if(end == 1)
@@ -180,7 +188,7 @@
                 bufIndex += sizeof(indicator);
                 
                 struct Nalu nalu;
-                memset(nalu.data, 0, sizeof(char)*2048);
+                memset(nalu.data, 0, sizeof(struct Nalu));
                 nalu.len = 0;
                 bool success = [NaluUtil addStartCode:buf size:bufIndex nalu:&nalu];
                 if(success) {
@@ -190,8 +198,10 @@
             }
         }
         
-        NSLog(@"deal with data end ----------------------");
+        free(rtpHdr);
     }while(mark == 0 && end == 0);
+    
+    NSLog(@"deal with data end ----------------------");
     
     memcpy(dest, buf, bufIndex);
     size = bufIndex;
