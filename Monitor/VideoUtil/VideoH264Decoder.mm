@@ -81,8 +81,9 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         decodeSession = NULL;
         
         bufSize = 0;
-        bufferCap = 512 * 1024;
+        bufferCap = 1024 * 1024;
         buffer = (uint8_t*) malloc(bufferCap);
+        memset(buffer, 0, bufferCap);
         
         sps = (uint8_t*) malloc(sizeof(uint8_t)*1024);
         memset(sps, 0, sizeof(uint8_t)*1024);
@@ -110,6 +111,11 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 {
     if(decodeSession)
         return YES;
+    if(decodeSession)
+    {
+        VTDecompressionSessionInvalidate(decodeSession);
+        decodeSession = NULL;
+    }
     
     const uint8_t * const parameterSetPointers[2] = { sps, pps };
     const size_t parameterSetSize[2] = { spsSize, ppsSize };
@@ -137,7 +143,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(BOOL) open:(NSString *)path
 {
-    [self.fileStream openAddr:@"192.168.6.178" port:4000];
+    [self.fileStream openAddr:@"192.168.6.186" port:4000];
     return YES;
 //    return [self.fileStream open:path];
 }
@@ -156,6 +162,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     }
     
     displayTimer.paused = NO;
+//    UITextField
     
     return YES;
 }
@@ -261,6 +268,12 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
 
 -(void) dataFilter:(uint8_t*) data size:(NSInteger) size
 {
+    
+    
+    Slice slice = Slice((uint8*)(data+StartCodeLength+1), (uint8*)(data+size-1));
+    int frame_type = slice.getSliceHeader();
+    frame_type = slice.getSliceHeader();
+    NSLog(@"frame_type: %d", frame_type);
     // hard decoder can only decode mp4 formart, so we should replace the start code with nal's length
     uint32_t nalSize = (uint32_t)size-4;
     uint8_t *nalSizePtr = (uint8_t*)&nalSize;
@@ -334,13 +347,17 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
         case 2: case 4:
         case 7: case 9:
             type = IFrame;
+            NSLog(@"I Frame");
             break;
         case 0:case 3:
         case 5:case 8:
             type = PFrame;
+            NSLog(@"frame_type: %d",frame_type);
+            NSLog(@"P Frame");
             break;
         case 1: case 6:
             type = BFrame;
+            NSLog(@"B Frame");
             break;
         default:
             type = UnknownFrame;
@@ -348,6 +365,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     }
     
     CVPixelBufferRef output = [self getLastPiexelByFrameType:type currentFrame:decodePixel];
+//    CVPixelBufferRef output = decodePixel;
     if(self.videoDelegate && output != NULL)
     {
         [self.videoDelegate videoDecodeCallback:output];
@@ -363,6 +381,7 @@ static void didDecompress( void *decompressionOutputRefCon, void *sourceFrameRef
     if( [frameQueue count] > 0)
     {
         lastPacket = [frameQueue objectAtIndex:0];
+//        [frameQueue removeObject:lastPacket];
     }
     
     switch (type) {

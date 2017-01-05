@@ -27,6 +27,10 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         
         super.viewDidLoad()
         
+        self.view.backgroundColor = UIColor.white
+//        self.navigationItem.titleView = nil
+//        self.navigationItem.title = "";
+        
         let mainView = UIView()
         let tapGes = UITapGestureRecognizer(target: self, action: #selector(tapGesture))
         mainView.addGestureRecognizer(tapGes)
@@ -92,6 +96,8 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
             title.text = dict["Title"] as? String
             title.font = title.font.withSize(30)
         }
+        
+//        self.navigationItem.title = title.text
         
         view.addSubview(title)
         title.snp_makeConstraints(closure: { (make) -> Void in
@@ -239,8 +245,15 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         
         self.delegate?.login("", password: "")
         
-        let videoViewCtrl = VideoViewController()
-        present(videoViewCtrl, animated: true, completion: nil)
+        let channelCtrl = ChannelsController()
+        if navigationController != nil {
+            navigationController!.pushViewController(channelCtrl, animated: true)
+        }
+        else {
+            present(channelCtrl, animated: true, completion: nil)
+        }
+//        let videoViewCtrl = VideoViewController()
+//        present(videoViewCtrl, animated: true, completion: nil)
         
     }
     
@@ -254,7 +267,7 @@ class LoginViewController : UIViewController, UITextFieldDelegate {
         if textField.returnKeyType == .next {
             textField.resignFirstResponder()
             self.pwdField.becomeFirstResponder()
-            textField.next
+//            textField.next
         }
         else if textField.returnKeyType == .done {
             textField.resignFirstResponder()

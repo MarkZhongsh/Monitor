@@ -30,7 +30,7 @@ unsigned int Slice::getSliceHeader()
     
     int i_ret;
     
-    unsigned short bitMax = 32;
+    const unsigned short bitMax = 32;
     int counter = 0;
     
     while(this->getBit() == 0 && this->m_ptr <= this->m_end && counter < bitMax)

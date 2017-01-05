@@ -12,7 +12,7 @@
 #import "Socket.h"
 #import "RTPUtil.h"
 #import "NaluUtil.h"
-
+#import "LogUtil.h"
 //const uint8_t KStartCode[4] = { 0, 0, 0, 1};
 //const uint8_t KStartCodeLen = sizeof(KStartCode)/sizeof(KStartCode[0]);
 
@@ -133,11 +133,12 @@
         return 0;
     
     int mark = 1, end = 1; //标记位 结束位
-    char buf[65536] = "";
+    char buf[131072] = "";
     memset(buf, 0, sizeof(buf));
     int bufIndex = 0;
     
-    NSLog(@"deal with data start ------------------------------");
+    [LogUtil PrintLog:@"deal with data start ------------------------------"];
+    NSLog(@"%@",@"deal with data start ------------------------------");
     do
     {
         char tmpBuf[2048] = "";
@@ -152,11 +153,12 @@
             void *naluData = tmpBuf+12+csrcLen;
             int naluDataLen = tmpSize-12-csrcLen;
             struct Nalu nalu;
-            memset(nalu.data, 0, sizeof(struct Nalu));
+            memset(&nalu, 0, sizeof(struct Nalu));
             bool success = [NaluUtil addStartCode:naluData size:naluDataLen nalu:&nalu];
             if(success) {
                 memcpy(buf, nalu.data, nalu.len);
                 bufIndex = nalu.len;
+                NSLog(@"nalu len with no fragment:%d", (unsigned int)nalu.len);
             }
         }
         else {
@@ -188,12 +190,14 @@
                 bufIndex += sizeof(indicator);
                 
                 struct Nalu nalu;
-                memset(nalu.data, 0, sizeof(struct Nalu));
+                memset(&nalu, 0, sizeof(struct Nalu));
                 nalu.len = 0;
                 bool success = [NaluUtil addStartCode:buf size:bufIndex nalu:&nalu];
-                if(success) {
+                if(success)
+                {
                     memcpy(buf, nalu.data, nalu.len);
                     bufIndex = nalu.len;
+                    NSLog(@"nalu len fragment: %d", (unsigned int)nalu.len);
                 }
             }
         }
@@ -201,7 +205,8 @@
         free(rtpHdr);
     }while(mark == 0 && end == 0);
     
-    NSLog(@"deal with data end ----------------------");
+    [LogUtil PrintLog:@"deal with data end ------------------------------"];
+    NSLog(@"%@",@"deal with data end ------------------------------");
     
     memcpy(dest, buf, bufIndex);
     size = bufIndex;
